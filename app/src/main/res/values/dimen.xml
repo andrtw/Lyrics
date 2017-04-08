@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="xs_padding">4dp</dimen>
+    <dimen name="sm_padding">8dp</dimen>
+    <dimen name="md_padding">16dp</dimen>
+    <dimen name="search_size">240dp</dimen>
+</resources>

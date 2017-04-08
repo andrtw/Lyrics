@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.andrea.lyrics.MainActivity"
+    android:background="@color/colorPrimaryDark">
+
+    <!-- main lyrics -->
+    <RelativeLayout
+        android:id="@+id/content_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <com.example.andrea.lyrics.views.InterceptableScrollView
+            android:id="@+id/scroll_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+                <TextView
+                    android:id="@+id/artist_song_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/colorAccent"
+                    android:layout_marginBottom="@dimen/sm_padding"
+                    android:layout_marginTop="@dimen/md_padding" />
+                <TextView
+                    android:id="@+id/lyrics_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:textColor="@color/colorAccent" />
+            </LinearLayout>
+        </com.example.andrea.lyrics.views.InterceptableScrollView>
+    </RelativeLayout>
+
+    <!-- overlay -->
+    <RelativeLayout
+        android:id="@+id/overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/content_overlay"
+        android:visibility="invisible"/>
+
+    <!-- search -->
+    <RelativeLayout
+        android:id="@+id/search_layout"
+        android:layout_width="@dimen/search_size"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:background="@drawable/search_background"
+        android:padding="@dimen/sm_padding"
+        android:visibility="invisible">
+        <LinearLayout
+            android:id="@+id/search_artist_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <AutoCompleteTextView
+                android:id="@+id/search_artist"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:hint="@string/artist_hint"
+                android:inputType="textCapWords"
+                android:lines="1"
+                android:maxLines="1"
+                android:imeOptions="actionNext"/>
+            <TextView
+                android:id="@+id/clear_artist"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="x"
+                android:textSize="20sp"
+                android:padding="@dimen/sm_padding"/>
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/search_song_layout"
+            android:layout_below="@+id/search_artist_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <AutoCompleteTextView
+                android:id="@+id/search_song"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:hint="@string/song_hint"
+                android:inputType="textCapWords"
+                android:lines="1"
+                android:maxLines="1"
+                android:imeOptions="actionSearch"/>
+            <TextView
+                android:id="@+id/clear_song"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="x"
+                android:textSize="20sp"
+                android:padding="@dimen/sm_padding"/>
+        </LinearLayout>
+        <Button
+            android:id="@+id/search_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/search_song_layout"
+            android:layout_centerHorizontal="true"
+            android:text="@string/search_button" />
+
+    </RelativeLayout>
+
+</RelativeLayout>
