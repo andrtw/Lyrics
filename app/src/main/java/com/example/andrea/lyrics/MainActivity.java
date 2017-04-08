@@ -2,6 +2,7 @@ package com.example.andrea.lyrics;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
@@ -15,10 +16,8 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AutoCompleteTextView;
-import android.widget.Button;
-import android.widget.CompoundButton;
+import android.widget.ImageButton;
 import android.widget.RelativeLayout;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import com.example.andrea.lyrics.db.DbLyrics;
@@ -62,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         searchLayout = (RelativeLayout) findViewById(R.id.search_layout);
         searchArtist = (AutoCompleteTextView) findViewById(R.id.search_artist);
         searchSong = (AutoCompleteTextView) findViewById(R.id.search_song);
-        Button searchBtn = (Button) findViewById(R.id.search_btn);
+        ImageButton searchBtn = (ImageButton) findViewById(R.id.search_btn);
         TextView clearArtist = (TextView) findViewById(R.id.clear_artist);
         TextView clearSong = (TextView) findViewById(R.id.clear_song);
 
@@ -77,16 +76,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                    doSearch();
+                    doSearch(searchArtist.getText().toString().trim(), searchSong.getText().toString().trim());
                     return true;
                 }
                 return false;
             }
         });
 
-        broadcastReceiver = new SpotifyBroadcastReceiver(new SpotifyBroadcastReceiver.OnCompletitionListener() {
+        broadcastReceiver = new SpotifyBroadcastReceiver(new SpotifyBroadcastReceiver.OnReceiveListener() {
             @Override
-            public void onComplete(String artist, String song) {
+            public void onReceive(String artist, String song) {
                 if (searchLayout.getVisibility() != View.VISIBLE) {
                     search(artist, song);
                 }
@@ -116,7 +115,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             // do search if needed
             if (artist != null && song != null) {
-                doSearch();
+                doSearch(searchArtist.getText().toString().trim(), searchSong.getText().toString().trim());
             }
         }
 
@@ -133,7 +132,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.search_btn: {
-                doSearch();
+                doSearch(searchArtist.getText().toString().trim(), searchSong.getText().toString().trim());
             }
             break;
             case R.id.clear_artist: {
@@ -202,9 +201,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
     }
 
-    private void doSearch() {
-        String artist = searchArtist.getText().toString().trim();
-        String song = searchSong.getText().toString().trim();
+    private void doSearch(String artist, String song) {
         if (artist.isEmpty() && song.isEmpty()) {
             closeSearch();
             searchArtist.setText("");
@@ -274,31 +271,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
-        final MenuItem switchItem = menu.findItem(R.id.menu_enabled);
-        switchItem.setActionView(R.layout.enabled_switch);
-
-        final Switch appEnabled = (Switch) switchItem.getActionView().findViewById(R.id.app_enabled);
-        appEnabled.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                boolean enabled = appEnabled.isChecked();
-                if (enabled) {
-                    registerReceiver();
-                }
-                else {
-                    unregisterReceiver();
-                }
-                // Important! Set this after having registered/unregistered
-                SettingsManager.toggleEnabled(MainActivity.this, enabled);
-            }
-        });
-        appEnabled.setChecked(SettingsManager.isEnabled(MainActivity.this));
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.menu_search_current:
+                doSearch(SpotifyBroadcastReceiver.artistName, SpotifyBroadcastReceiver.trackName);
+                return true;
             case R.id.menu_search:
                 int visibility = searchLayout.getVisibility();
                 if (visibility != View.VISIBLE) {
@@ -307,6 +288,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 else {
                     closeSearch();
                 }
+                return true;
+            case R.id.menu_settings:
+                startActivity(new Intent(MainActivity.this, SettingsActivity.class));
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -346,11 +330,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         filter.addAction(SpotifyBroadcastReceiver.BroadcastTypes.QUEUE_CHANGED);
         filter.addAction(SpotifyBroadcastReceiver.BroadcastTypes.METADATA_CHANGED);
         this.registerReceiver(broadcastReceiver, filter);
+        Logger.debugMessage("Broadcast registered");
     }
 
     private void unregisterReceiver() {
         if (SettingsManager.isEnabled(MainActivity.this)) {
             this.unregisterReceiver(broadcastReceiver);
+            Logger.debugMessage("Broadcast unregistered");
         }
     }
 

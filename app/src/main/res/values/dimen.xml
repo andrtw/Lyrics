@@ -4,4 +4,6 @@
     <dimen name="sm_padding">8dp</dimen>
     <dimen name="md_padding">16dp</dimen>
     <dimen name="search_size">240dp</dimen>
+
+    <dimen name="setting_text_size">24sp</dimen>
 </resources>

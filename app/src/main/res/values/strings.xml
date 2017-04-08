@@ -1,21 +1,31 @@
 <resources>
     <string name="app_name">Lyrics</string>
 
+    <!-- Search dialog -->
     <string name="artist_hint">Artist</string>
     <string name="song_hint">Song</string>
-
     <string name="search_button">Search</string>
-    <string name="search_menu">Search</string>
 
+    <!-- Menu -->
+    <string name="search_current_menu">Search current</string>
+    <string name="search_menu">Search</string>
+    <string name="settings_menu">Settings</string>
+
+    <!-- Autocomplete -->
     <string name="delete_autocomplete_title">Delete</string>
     <string name="delete_autocomplete_message">Are you sure you want to delete this suggestion?</string>
 
-    <string name="ok_up">OK</string>
-    <string name="cancel_up">CANCEL</string>
-
+    <!-- Errors -->
     <string name="error_lyrics_not_found">Lyrics not found, sorry.</string>
-
     <string name="error_dialog_title">Error</string>
     <string name="error_dialog_offline">You are currently offline. Please connect to the Internet in order to get lyrics.</string>
     <string name="error_dialog_unknown">Unknown error. Please retry later.</string>
+
+    <!-- Settings -->
+    <string name="setting_auto_search_label">Auto search</string>
+    <string name="setting_auto_search_descr">Automatically search for songs</string>
+
+    <!-- Other -->
+    <string name="ok_up">OK</string>
+    <string name="cancel_up">CANCEL</string>
 </resources>

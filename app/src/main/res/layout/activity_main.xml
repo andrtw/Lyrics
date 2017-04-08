@@ -103,13 +103,17 @@
                 android:textSize="20sp"
                 android:padding="@dimen/sm_padding"/>
         </LinearLayout>
-        <Button
+        <ImageButton
             android:id="@+id/search_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/search_song_layout"
             android:layout_centerHorizontal="true"
-            android:text="@string/search_button" />
+            android:src="@drawable/ic_search_dark_48"
+            android:background="@drawable/search_button_bg"
+            android:text="@string/search_button"
+            android:padding="@dimen/sm_padding"
+            android:layout_marginTop="@dimen/sm_padding"/>
 
     </RelativeLayout>
 

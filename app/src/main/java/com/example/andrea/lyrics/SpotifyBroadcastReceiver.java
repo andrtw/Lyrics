@@ -18,15 +18,15 @@ public class SpotifyBroadcastReceiver extends BroadcastReceiver {
         static final String QUEUE_CHANGED = SPOTIFY_PACKAGE + ".queuechanged";
         static final String METADATA_CHANGED = SPOTIFY_PACKAGE + ".metadatachanged";
     }
-    private OnCompletitionListener listener;
+    private OnReceiveListener listener;
     private boolean doSearch;
-    private String artistName, trackName;
+    public static String artistName, trackName;
 
-    public interface OnCompletitionListener {
-        void onComplete(String artist, String song);
+    public interface OnReceiveListener {
+        void onReceive(String artist, String song);
     }
 
-    public SpotifyBroadcastReceiver(OnCompletitionListener listener) {
+    public SpotifyBroadcastReceiver(OnReceiveListener listener) {
         this.listener = listener;
         doSearch = false;
         artistName = "";
@@ -46,13 +46,17 @@ public class SpotifyBroadcastReceiver extends BroadcastReceiver {
 
             artistName = intent.getStringExtra("artist");
             trackName = intent.getStringExtra("track");
+
+            Logger.debugMessage("METADATA_CHANGED: " + artistName + ", " + trackName);
         }
         else if (action.equals(BroadcastTypes.PLAYBACK_STATE_CHANGED)) {
             boolean playing = intent.getBooleanExtra("playing", false);
             int positionInMs = intent.getIntExtra("playbackPosition", 0);
 
-            if (doSearch && playing && positionInMs == 0) {
-                listener.onComplete(artistName, trackName);
+            Logger.debugMessage("PLAYBACK_STATE_CHANGED: " + playing + ", " + positionInMs);
+
+            if (doSearch && playing && positionInMs <= 1000) {
+                listener.onReceive(artistName, trackName);
             }
         }
         /*else if (action.equals(BroadcastTypes.QUEUE_CHANGED)) {
