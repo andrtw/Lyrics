@@ -20,7 +20,8 @@ public class SpotifyBroadcastReceiver extends BroadcastReceiver {
     }
     private OnReceiveListener listener;
     private boolean doSearch;
-    public static String artistName, trackName;
+    private String artistName, trackName;
+    private String tempArtistName, tempTrackName;
 
     public interface OnReceiveListener {
         void onReceive(String artist, String song);
@@ -44,8 +45,8 @@ public class SpotifyBroadcastReceiver extends BroadcastReceiver {
 
             doSearch = true;
 
-            artistName = intent.getStringExtra("artist");
-            trackName = intent.getStringExtra("track");
+            tempArtistName = intent.getStringExtra("artist");
+            tempTrackName = intent.getStringExtra("track");
 
             Logger.debugMessage("METADATA_CHANGED: " + artistName + ", " + trackName);
         }
@@ -56,11 +57,35 @@ public class SpotifyBroadcastReceiver extends BroadcastReceiver {
             Logger.debugMessage("PLAYBACK_STATE_CHANGED: " + playing + ", " + positionInMs);
 
             if (doSearch && playing && positionInMs <= 1000) {
+                artistName = tempArtistName;
+                trackName = tempTrackName;
+
                 listener.onReceive(artistName, trackName);
+            }
+            else {
+                artistName = "";
+                trackName = "";
             }
         }
         /*else if (action.equals(BroadcastTypes.QUEUE_CHANGED)) {
             // Sent only as a notification, your app may want to respond accordingly.
         }*/
+    }
+
+
+    public String getArtistName() {
+        return artistName;
+    }
+
+    public void setArtistName(String artistName) {
+        this.artistName = artistName;
+    }
+
+    public String getTrackName() {
+        return trackName;
+    }
+
+    public void setTrackName(String trackName) {
+        this.trackName = trackName;
     }
 }

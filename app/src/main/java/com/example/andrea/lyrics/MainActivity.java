@@ -10,19 +10,20 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AutoCompleteTextView;
-import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.example.andrea.lyrics.db.DbLyrics;
-import com.example.andrea.lyrics.model.AutoCompleteItem;
 import com.example.andrea.lyrics.model.Lyrics;
 import com.example.andrea.lyrics.model.Recent;
 import com.example.andrea.lyrics.utils.Animations;
@@ -31,18 +32,24 @@ import com.example.andrea.lyrics.utils.Logger;
 import com.example.andrea.lyrics.utils.LyricsDownloader;
 import com.example.andrea.lyrics.views.InterceptableScrollView;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     // UI
-    private RelativeLayout overlay;
+    // lyrics
+    private RelativeLayout lyricsLayout;
     private InterceptableScrollView scrollView;
     private TextView lyricsText;
     private TextView artistSongText;
+    // search
     private RelativeLayout searchLayout;
     private AutoCompleteTextView searchArtist, searchSong;
+    // recents
+    private RelativeLayout recentsLayout;
+    private LinearLayout recentsGrid;
 
     private SpotifyBroadcastReceiver broadcastReceiver;
     private DbLyrics db;
@@ -57,16 +64,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         db.open();
         handler = new Handler();
 
-        overlay = (RelativeLayout) findViewById(R.id.overlay);
+        // lyrics
+        lyricsLayout = (RelativeLayout) findViewById(R.id.lyrics_layout);
         scrollView = (InterceptableScrollView) findViewById(R.id.scroll_view);
         lyricsText = (TextView) findViewById(R.id.lyrics_text);
         artistSongText = (TextView) findViewById(R.id.artist_song_text);
+
+        // search
         searchLayout = (RelativeLayout) findViewById(R.id.search_layout);
         searchArtist = (AutoCompleteTextView) findViewById(R.id.search_artist);
         searchSong = (AutoCompleteTextView) findViewById(R.id.search_song);
         ImageButton searchBtn = (ImageButton) findViewById(R.id.search_btn);
         TextView clearArtist = (TextView) findViewById(R.id.clear_artist);
         TextView clearSong = (TextView) findViewById(R.id.clear_song);
+
+        // recents
+        recentsLayout = (RelativeLayout) findViewById(R.id.recents_layout);
+        recentsGrid = (LinearLayout) findViewById(R.id.recents_grid);
+        populateRecents();
 
         searchBtn.setOnClickListener(this);
         clearArtist.setOnClickListener(this);
@@ -133,6 +148,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    private void populateRecents() {
+        List<Recent> recents = db.getRecents();
+        Collections.reverse(recents);
+        recentsGrid.removeAllViews();
+
+        LayoutInflater inflater = getLayoutInflater();
+
+        for (final Recent r : recents) {
+            View v = inflater.inflate(R.layout.recent, null);
+            ((TextView) v.findViewById(R.id.recent_artist_name)).setText(r.getArtistName());
+            ((TextView) v.findViewById(R.id.recent_song_name)).setText(r.getSongName());
+            v.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    search(r.getArtistName(), r.getSongName());
+                }
+            });
+            // for some reason setting the margins in the layout file doesn't work
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            params.bottomMargin = (int) getResources().getDimension(R.dimen.md_padding);
+            params.leftMargin = (int) getResources().getDimension(R.dimen.sm_padding);
+            params.rightMargin = (int) getResources().getDimension(R.dimen.sm_padding);
+            recentsGrid.addView(v, params);
+        }
+    }
+
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -178,8 +219,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         searchSong.setText(lyrics.getSongName());
                         setupSongAutocomplete();
 
-                        SpotifyBroadcastReceiver.artistName = lyrics.getArtistName();
-                        SpotifyBroadcastReceiver.trackName = lyrics.getSongName();
+                        broadcastReceiver.setArtistName(lyrics.getArtistName());
+                        broadcastReceiver.setTrackName(lyrics.getSongName());
+
+                        Animations.close(MainActivity.this, recentsLayout);
+                        Animations.open(MainActivity.this, lyricsLayout);
                     }
                 });
             }
@@ -194,7 +238,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         builder
                                 .setTitle(R.string.error_dialog_title)
                                 .setMessage(online ? R.string.error_dialog_unknown : R.string.error_dialog_offline)
-                                .setPositiveButton(R.string.ok_up, new DialogInterface.OnClickListener() {
+                                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
                                         dialog.dismiss();
@@ -213,8 +257,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             closeSearch();
             searchArtist.setText("");
             searchSong.setText("");
-        }
-        else {
+        } else {
             search(artist, song);
         }
         scrollView.smoothScrollTo(0, 0);
@@ -228,13 +271,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void openSearch() {
         Animations.open(this, searchLayout);
-        Animations.open(this, overlay);
         scrollView.setScrollable(false);
     }
 
     private void closeSearch() {
         Animations.close(this, searchLayout);
-        Animations.close(this, overlay);
         scrollView.setScrollable(true);
         // hide keyboard
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -263,7 +304,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private HashMap<String, Object> handleLyricsErrors(Lyrics lyrics) {
-        HashMap<String, Object> map  = new HashMap<>();
+        HashMap<String, Object> map = new HashMap<>();
         boolean errors = false;
 
         if (lyrics.getLyrics().equals(LyricsDownloader.NOT_FOUND_CODE)) {
@@ -285,15 +326,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.menu_home:
+                populateRecents();
+                Animations.close(MainActivity.this, searchLayout);
+                Animations.close(MainActivity.this, lyricsLayout);
+                Animations.open(MainActivity.this, recentsLayout);
+                return true;
             case R.id.menu_search_current:
-                doSearch(SpotifyBroadcastReceiver.artistName, SpotifyBroadcastReceiver.trackName);
+                doSearch(broadcastReceiver.getArtistName(), broadcastReceiver.getTrackName());
                 return true;
             case R.id.menu_search:
                 int visibility = searchLayout.getVisibility();
                 if (visibility != View.VISIBLE) {
+                    if (recentsLayout.getVisibility() == View.VISIBLE) {
+                        Animations.close(MainActivity.this, recentsLayout);
+                        Animations.open(MainActivity.this, lyricsLayout);
+                    }
                     openSearch();
-                }
-                else {
+                } else {
                     closeSearch();
                 }
                 return true;
@@ -318,8 +368,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onResume() {
         db.open();
 
-        if (SettingsManager.isEnabled(MainActivity.this)) {
+        if (SettingsManager.isAutoSearchEnabled(MainActivity.this)) {
             registerReceiver();
+        }
+
+        if (recentsLayout.getVisibility() == View.VISIBLE) {
+            populateRecents();
         }
 
         super.onResume();
@@ -342,7 +396,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void unregisterReceiver() {
-        if (SettingsManager.isEnabled(MainActivity.this)) {
+        if (SettingsManager.isAutoSearchEnabled(MainActivity.this)) {
             this.unregisterReceiver(broadcastReceiver);
             Logger.debugMessage("Broadcast unregistered");
         }

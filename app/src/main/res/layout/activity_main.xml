@@ -6,11 +6,26 @@
     tools:context="com.example.andrea.lyrics.MainActivity"
     android:background="@color/colorPrimaryDark">
 
+    <!-- recent searches -->
+    <RelativeLayout
+        android:id="@+id/recents_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="visible">
+        <LinearLayout
+            android:id="@+id/recents_grid"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:orientation="vertical"/>
+    </RelativeLayout>
+    
     <!-- main lyrics -->
     <RelativeLayout
-        android:id="@+id/content_layout"
+        android:id="@+id/lyrics_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:visibility="invisible">
         <com.example.andrea.lyrics.views.InterceptableScrollView
             android:id="@+id/scroll_view"
             android:layout_width="match_parent"
@@ -39,81 +54,79 @@
         </com.example.andrea.lyrics.views.InterceptableScrollView>
     </RelativeLayout>
 
-    <!-- overlay -->
-    <RelativeLayout
-        android:id="@+id/overlay"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/content_overlay"
-        android:visibility="invisible"/>
-
     <!-- search -->
     <RelativeLayout
         android:id="@+id/search_layout"
-        android:layout_width="@dimen/search_size"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:background="@drawable/search_background"
-        android:padding="@dimen/sm_padding"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/search_overlay"
         android:visibility="invisible">
-        <LinearLayout
-            android:id="@+id/search_artist_layout"
-            android:layout_width="match_parent"
+        <RelativeLayout
+            android:layout_width="@dimen/search_size"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
-            <AutoCompleteTextView
-                android:id="@+id/search_artist"
-                android:layout_width="0dp"
-                android:layout_weight="1"
+            android:layout_centerInParent="true"
+            android:background="@drawable/search_background"
+            android:padding="@dimen/sm_padding">
+            <LinearLayout
+                android:id="@+id/search_artist_layout"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/artist_hint"
-                android:inputType="textCapWords"
-                android:lines="1"
-                android:maxLines="1"
-                android:imeOptions="actionNext"/>
-            <TextView
-                android:id="@+id/clear_artist"
+                android:orientation="horizontal">
+                <AutoCompleteTextView
+                    android:id="@+id/search_artist"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/artist_hint"
+                    android:inputType="textCapWords"
+                    android:lines="1"
+                    android:maxLines="1"
+                    android:imeOptions="actionNext"/>
+                <TextView
+                    android:id="@+id/clear_artist"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="x"
+                    android:textSize="20sp"
+                    android:padding="@dimen/sm_padding"/>
+            </LinearLayout>
+            <LinearLayout
+                android:id="@+id/search_song_layout"
+                android:layout_below="@+id/search_artist_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <AutoCompleteTextView
+                    android:id="@+id/search_song"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/song_hint"
+                    android:inputType="textCapWords"
+                    android:lines="1"
+                    android:maxLines="1"
+                    android:imeOptions="actionSearch"/>
+                <TextView
+                    android:id="@+id/clear_song"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="x"
+                    android:textSize="20sp"
+                    android:padding="@dimen/sm_padding"/>
+            </LinearLayout>
+            <ImageButton
+                android:id="@+id/search_btn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="x"
-                android:textSize="20sp"
-                android:padding="@dimen/sm_padding"/>
-        </LinearLayout>
-        <LinearLayout
-            android:id="@+id/search_song_layout"
-            android:layout_below="@+id/search_artist_layout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-            <AutoCompleteTextView
-                android:id="@+id/search_song"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:hint="@string/song_hint"
-                android:inputType="textCapWords"
-                android:lines="1"
-                android:maxLines="1"
-                android:imeOptions="actionSearch"/>
-            <TextView
-                android:id="@+id/clear_song"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="x"
-                android:textSize="20sp"
-                android:padding="@dimen/sm_padding"/>
-        </LinearLayout>
-        <ImageButton
-            android:id="@+id/search_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/search_song_layout"
-            android:layout_centerHorizontal="true"
-            android:src="@drawable/ic_search_dark_48"
-            android:background="@drawable/search_button_bg"
-            android:text="@string/search_button"
-            android:padding="@dimen/sm_padding"
-            android:layout_marginTop="@dimen/sm_padding"/>
+                android:layout_below="@+id/search_song_layout"
+                android:layout_centerHorizontal="true"
+                android:src="@drawable/ic_search_dark_48"
+                android:background="@drawable/search_button_bg"
+                android:text="@string/search_button"
+                android:padding="@dimen/sm_padding"
+                android:layout_marginTop="@dimen/sm_padding"/>
+
+        </RelativeLayout>
 
     </RelativeLayout>
 

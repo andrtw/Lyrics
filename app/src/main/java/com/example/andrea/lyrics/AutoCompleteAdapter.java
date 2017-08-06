@@ -54,7 +54,7 @@ public class AutoCompleteAdapter extends ArrayAdapter<AutoCompleteItem> {
                 builder
                         .setTitle(R.string.delete_autocomplete_title)
                         .setMessage(R.string.delete_autocomplete_message)
-                        .setPositiveButton(R.string.ok_up, new DialogInterface.OnClickListener() {
+                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 switch (item.getType()) {
@@ -71,7 +71,7 @@ public class AutoCompleteAdapter extends ArrayAdapter<AutoCompleteItem> {
                                 }
                             }
                         })
-                        .setNegativeButton(R.string.cancel_up, new DialogInterface.OnClickListener() {
+                        .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 dialog.dismiss();

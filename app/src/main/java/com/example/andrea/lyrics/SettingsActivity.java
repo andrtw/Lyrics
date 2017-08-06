@@ -1,6 +1,5 @@
 package com.example.andrea.lyrics;
 
-import android.app.Dialog;
 import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -21,12 +20,19 @@ public class SettingsActivity extends AppCompatActivity {
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        Switch autoSearchSwitch = (Switch) findViewById(R.id.auto_search_switch);
-        autoSearchSwitch.setChecked(SettingsManager.isEnabled(SettingsActivity.this));
+        final Switch autoSearchSwitch = (Switch) findViewById(R.id.auto_search_switch);
+        autoSearchSwitch.setChecked(SettingsManager.isAutoSearchEnabled(SettingsActivity.this));
         autoSearchSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                SettingsManager.toggleEnabled(SettingsActivity.this, isChecked);
+                SettingsManager.toggleAutoSearch(SettingsActivity.this, isChecked);
+            }
+        });
+        LinearLayout autoSearchLayout = (LinearLayout) findViewById(R.id.layout_auto_search);
+        autoSearchLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                autoSearchSwitch.performClick();
             }
         });
 

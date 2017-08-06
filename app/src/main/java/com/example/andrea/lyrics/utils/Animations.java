@@ -17,6 +17,7 @@ public class Animations {
     private static final int DURATION = 200;
 
     public static void open(Context ctx, final ViewGroup v) {
+        if (v.getVisibility() == View.VISIBLE) return;
         Animation anim = AnimationUtils.loadAnimation(ctx, R.anim.fade_in);
         anim.setDuration(DURATION);
         anim.setAnimationListener(new Animation.AnimationListener() {
@@ -37,6 +38,7 @@ public class Animations {
     }
 
     public static void close(Context ctx, final ViewGroup v) {
+        if (v.getVisibility() == View.INVISIBLE) return;
         Animation anim = AnimationUtils.loadAnimation(ctx, R.anim.fade_out);
         anim.setDuration(DURATION);
         anim.setAnimationListener(new Animation.AnimationListener() {
