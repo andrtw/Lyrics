@@ -12,7 +12,7 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import com.example.andrea.lyrics.db.DbLyrics;
-import com.example.andrea.lyrics.model.Item;
+import com.example.andrea.lyrics.model.AutoCompleteItem;
 
 import java.util.List;
 
@@ -20,7 +20,7 @@ import java.util.List;
  * Created by andrea on 31/03/17.
  */
 
-public class AutoCompleteAdapter extends ArrayAdapter<Item> {
+public class AutoCompleteAdapter extends ArrayAdapter<AutoCompleteItem> {
 
     private DbLyrics db;
     private AutocompleteListener listener;
@@ -29,7 +29,7 @@ public class AutoCompleteAdapter extends ArrayAdapter<Item> {
         void onDelete();
     }
 
-    public AutoCompleteAdapter(Context context, List<Item> objects, DbLyrics db, AutocompleteListener listener) {
+    public AutoCompleteAdapter(Context context, List<AutoCompleteItem> objects, DbLyrics db, AutocompleteListener listener) {
         super(context, 0, objects);
         this.db = db;
         this.listener = listener;
@@ -38,7 +38,7 @@ public class AutoCompleteAdapter extends ArrayAdapter<Item> {
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        final Item item = getItem(position);
+        final AutoCompleteItem item = getItem(position);
 
         if (convertView == null) {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.autocomplete, parent, false);
@@ -58,11 +58,11 @@ public class AutoCompleteAdapter extends ArrayAdapter<Item> {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 switch (item.getType()) {
-                                    case Item.TYPE_ARTIST:
+                                    case AutoCompleteItem.TYPE_ARTIST:
                                         db.deleteArtist(item);
                                         listener.onDelete();
                                         break;
-                                    case Item.TYPE_SONG:
+                                    case AutoCompleteItem.TYPE_SONG:
                                         db.deleteSong(item);
                                         listener.onDelete();
                                         break;

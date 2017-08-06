@@ -14,4 +14,10 @@ public class DbContract {
     public static final String TABLE_SONGS = "songs";
     public static final String SONG_ID = "_id";
     public static final String SONG_NAME = "song_name";
+
+    public static final String TABLE_RECENT = "recent";
+    public static final String RECENT_ID = "_id";
+    public static final String RECENT_ARTIST_NAME = "recent_artist_name";
+    public static final String RECENT_SONG_NAME = "recent_song_name";
+    public static final int RECENT_MAX = 4;
 }

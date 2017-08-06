@@ -16,13 +16,15 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.example.andrea.lyrics.db.DbLyrics;
-import com.example.andrea.lyrics.model.Item;
+import com.example.andrea.lyrics.model.AutoCompleteItem;
 import com.example.andrea.lyrics.model.Lyrics;
+import com.example.andrea.lyrics.model.Recent;
 import com.example.andrea.lyrics.utils.Animations;
 import com.example.andrea.lyrics.utils.HtmlParser;
 import com.example.andrea.lyrics.utils.Logger;
@@ -30,6 +32,7 @@ import com.example.andrea.lyrics.utils.LyricsDownloader;
 import com.example.andrea.lyrics.views.InterceptableScrollView;
 
 import java.util.HashMap;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -92,7 +95,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
 
-        // restore state
+        restoreState(savedInstanceState);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putBoolean("search_open", searchLayout.getVisibility() == View.VISIBLE);
+        outState.putString("search_artist", searchArtist.getText().toString());
+        outState.putString("search_song", searchSong.getText().toString());
+    }
+
+    private void restoreState(Bundle savedInstanceState) {
         if (savedInstanceState != null) {
             // search layout
             Boolean searchOpen = getSavedInstanceValue(savedInstanceState, "search_open");
@@ -118,14 +131,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 doSearch(searchArtist.getText().toString().trim(), searchSong.getText().toString().trim());
             }
         }
-
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        outState.putBoolean("search_open", searchLayout.getVisibility() == View.VISIBLE);
-        outState.putString("search_artist", searchArtist.getText().toString());
-        outState.putString("search_song", searchSong.getText().toString());
     }
 
     @Override
@@ -164,8 +169,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         closeSearch();
 
                         if (!errors) {
-                            // save artist and song entered by user, not the ones parsed
-                            saveArtistAndSong(artist, song);
+                            saveArtistAndSong(lyrics.getArtistName(), lyrics.getSongName());
                         }
 
                         searchArtist.setText(lyrics.getArtistName());
@@ -173,6 +177,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                         searchSong.setText(lyrics.getSongName());
                         setupSongAutocomplete();
+
+                        SpotifyBroadcastReceiver.artistName = lyrics.getArtistName();
+                        SpotifyBroadcastReceiver.trackName = lyrics.getSongName();
                     }
                 });
             }
@@ -214,8 +221,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void saveArtistAndSong(String artist, String song) {
-        Item a = db.addArtist(artist);
-        Item s = db.addSong(song);
+        db.addArtist(artist);
+        db.addSong(song);
+        db.addRecent(artist, song);
     }
 
     private void openSearch() {

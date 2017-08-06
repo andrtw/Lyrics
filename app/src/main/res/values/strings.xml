@@ -24,6 +24,10 @@
     <!-- Settings -->
     <string name="setting_auto_search_label">Auto search</string>
     <string name="setting_auto_search_descr">Automatically search for songs</string>
+    <string name="setting_delete_recents_label">Delete recent searches</string>
+    <string name="setting_delete_recents_descr">All the recent searches will be deleted. Warning: cannot undo.</string>
+    <string name="dialog_delete_recents_title">Delete recent searches</string>
+    <string name="dialog_delete_recents_message">Are you sure you want to delete all recent searches?</string>
 
     <!-- Other -->
     <string name="ok_up">OK</string>

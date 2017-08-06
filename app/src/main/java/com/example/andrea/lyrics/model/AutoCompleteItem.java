@@ -4,7 +4,7 @@ package com.example.andrea.lyrics.model;
  * Created by andrea on 31/03/17.
  */
 
-public class Item {
+public class AutoCompleteItem {
 
     public static final int TYPE_ARTIST = 0;
     public static final int TYPE_SONG = 1;
@@ -13,7 +13,7 @@ public class Item {
     private int type;
     private String name;
 
-    public Item(long id, int type, String name) {
+    public AutoCompleteItem(long id, int type, String name) {
         this.id = id;
         this.type = type;
         this.name = name;
