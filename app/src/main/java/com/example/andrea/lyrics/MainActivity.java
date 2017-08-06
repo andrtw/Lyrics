@@ -21,6 +21,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.example.andrea.lyrics.db.DbLyrics;
@@ -48,7 +49,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private RelativeLayout searchLayout;
     private AutoCompleteTextView searchArtist, searchSong;
     // recents
-    private RelativeLayout recentsLayout;
+    private ScrollView recentsLayout;
     private LinearLayout recentsGrid;
 
     private SpotifyBroadcastReceiver broadcastReceiver;
@@ -79,7 +80,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         TextView clearSong = (TextView) findViewById(R.id.clear_song);
 
         // recents
-        recentsLayout = (RelativeLayout) findViewById(R.id.recents_layout);
+        recentsLayout = (ScrollView) findViewById(R.id.recents_layout);
         recentsGrid = (LinearLayout) findViewById(R.id.recents_grid);
         populateRecents();
 
@@ -167,9 +168,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             });
             // for some reason setting the margins in the layout file doesn't work
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            params.bottomMargin = (int) getResources().getDimension(R.dimen.md_padding);
-            params.leftMargin = (int) getResources().getDimension(R.dimen.sm_padding);
-            params.rightMargin = (int) getResources().getDimension(R.dimen.sm_padding);
+            int smPad = (int) getResources().getDimension(R.dimen.sm_padding);
+            params.topMargin = smPad;
+            params.bottomMargin = smPad;
+            params.leftMargin = smPad;
+            params.rightMargin = smPad;
             recentsGrid.addView(v, params);
         }
     }
