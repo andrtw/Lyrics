@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -20,6 +21,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AutoCompleteTextView;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -40,6 +42,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     // UI
+    private ProgressBar progress;
     // lyrics
     private RelativeLayout lyricsLayout;
     private InterceptableScrollView scrollView;
@@ -64,6 +67,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         db = new DbLyrics(this);
         db.open();
         handler = new Handler();
+
+        progress = (ProgressBar) findViewById(R.id.progress);
 
         // lyrics
         lyricsLayout = (RelativeLayout) findViewById(R.id.lyrics_layout);
@@ -102,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
 
-        broadcastReceiver = new SpotifyBroadcastReceiver(new SpotifyBroadcastReceiver.OnReceiveListener() {
+        broadcastReceiver = new SpotifyBroadcastReceiver(this, new SpotifyBroadcastReceiver.OnReceiveListener() {
             @Override
             public void onReceive(String artist, String song) {
                 if (searchLayout.getVisibility() != View.VISIBLE) {
@@ -198,9 +203,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void search(final String artist, final String song) {
+        Logger.debugMessage("search: " + artist + ", " + song);
+
+        closeSearch();
+        setProgress(true);
         LyricsDownloader.getSourceCode(artist, song, new LyricsDownloader.DownloadListener() {
             @Override
             public void onComplete(String html) {
+                setProgress(false);
+
                 final HashMap<String, Object> parsed = handleLyricsErrors(HtmlParser.parseSourceCode(html));
                 final Lyrics lyrics = (Lyrics) parsed.get("lyrics");
                 final boolean errors = (Boolean) parsed.get("errors");
@@ -233,6 +244,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             @Override
             public void onError() {
+                setProgress(false);
+
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
@@ -256,6 +269,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void doSearch(String artist, String song) {
+        Logger.debugMessage("doSearch: " + artist + ", " + song);
+
         if (artist.isEmpty() && song.isEmpty()) {
             closeSearch();
             searchArtist.setText("");
@@ -371,9 +386,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onResume() {
         db.open();
 
-        if (SettingsManager.isAutoSearchEnabled(MainActivity.this)) {
-            registerReceiver();
-        }
+        registerReceiver();
 
         if (recentsLayout.getVisibility() == View.VISIBLE) {
             populateRecents();
@@ -410,5 +423,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return (T) savedInstanceBundle.get(key);
         }
         return null;
+    }
+
+    private void setProgress(final boolean visible) {
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (visible) progress.setVisibility(View.VISIBLE);
+                else progress.setVisibility(View.INVISIBLE);
+            }
+        });
     }
 }

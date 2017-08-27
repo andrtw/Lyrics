@@ -2,8 +2,9 @@
 <resources>
     <color name="colorPrimary">#424242</color>
     <color name="colorPrimaryDark">#212121</color>
-    <color name="colorAccent">#BDBDBD</color>
+    <color name="colorAccent">#536dfe</color>
     <color name="white">#fff</color>
+    <color name="light_gray">#BDBDBD</color>
 
     <color name="search_overlay">#88000000</color>
     <color name="search_background">#ccc</color>

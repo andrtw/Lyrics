@@ -34,6 +34,7 @@ public class LyricsDownloader {
     }
 
     public static void getSourceCode(String artist, String song, final DownloadListener listener) {
+        Logger.debugMessage("LyricsDownloader.getSourceCode: " + artist + ", " + song);
 
         final String cleanedArtist = setupForUrl(artist, true);
         final String cleanedSong = setupForUrl(song, false);
@@ -78,7 +79,8 @@ public class LyricsDownloader {
 
     private static String setupForUrl(String str, boolean ignoreThe) {
         String s = str.trim().toLowerCase()
-                .replaceAll("[^A-Za-z0-9]", "");
+                .replaceAll("[^A-Za-z0-9]", "")
+                .replace("&", "");
         if (ignoreThe) {
             return s.replace("the", "");
         }

@@ -18,16 +18,18 @@ public class SpotifyBroadcastReceiver extends BroadcastReceiver {
         static final String QUEUE_CHANGED = SPOTIFY_PACKAGE + ".queuechanged";
         static final String METADATA_CHANGED = SPOTIFY_PACKAGE + ".metadatachanged";
     }
+
+    private Context context;
     private OnReceiveListener listener;
     private boolean doSearch;
     private String artistName, trackName;
-    private String tempArtistName, tempTrackName;
 
     public interface OnReceiveListener {
         void onReceive(String artist, String song);
     }
 
-    public SpotifyBroadcastReceiver(OnReceiveListener listener) {
+    public SpotifyBroadcastReceiver(Context context, OnReceiveListener listener) {
+        this.context = context;
         this.listener = listener;
         doSearch = false;
         artistName = "";
@@ -45,26 +47,20 @@ public class SpotifyBroadcastReceiver extends BroadcastReceiver {
 
             doSearch = true;
 
-            tempArtistName = intent.getStringExtra("artist");
-            tempTrackName = intent.getStringExtra("track");
+            artistName = intent.getStringExtra("artist");
+            trackName = intent.getStringExtra("track");
 
             Logger.debugMessage("METADATA_CHANGED: " + artistName + ", " + trackName);
-        }
-        else if (action.equals(BroadcastTypes.PLAYBACK_STATE_CHANGED)) {
+        } else if (action.equals(BroadcastTypes.PLAYBACK_STATE_CHANGED)) {
             boolean playing = intent.getBooleanExtra("playing", false);
             int positionInMs = intent.getIntExtra("playbackPosition", 0);
 
             Logger.debugMessage("PLAYBACK_STATE_CHANGED: " + playing + ", " + positionInMs);
 
             if (doSearch && playing && positionInMs <= 1000) {
-                artistName = tempArtistName;
-                trackName = tempTrackName;
-
-                listener.onReceive(artistName, trackName);
-            }
-            else {
-                artistName = "";
-                trackName = "";
+                if (SettingsManager.isAutoSearchEnabled(context)) {
+                    listener.onReceive(artistName, trackName);
+                }
             }
         }
         /*else if (action.equals(BroadcastTypes.QUEUE_CHANGED)) {

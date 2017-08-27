@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:textSize="20sp"
         android:textStyle="bold"
-        android:textColor="@color/colorAccent"
+        android:textColor="@color/light_gray"
         android:layout_gravity="center"
         android:gravity="center"
         android:text="Artist Name"/>
@@ -20,7 +20,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="16sp"
-        android:textColor="@color/colorAccent"
+        android:textColor="@color/light_gray"
         android:layout_gravity="center"
         android:gravity="center"
         android:text="Song Name"/>

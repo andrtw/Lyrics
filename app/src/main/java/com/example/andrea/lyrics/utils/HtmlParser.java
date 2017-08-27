@@ -12,8 +12,8 @@ public class HtmlParser {
     private static final String LYRICS_END = "<!-- MxM banner -->";
     private static final String COMMENT_START = "<!--";
     private static final String COMMENT_END = "-->";
-    private static final String ARTIST_NAME = "ArtistName";
-    private static final String SONG_NAME = "SongName";
+    private static final String ARTIST_NAME = "ArtistName = \"";
+    private static final String SONG_NAME = "SongName = \"";
 
     public static Lyrics parseSourceCode(String html) {
         Lyrics lyrics = new Lyrics();
@@ -26,16 +26,15 @@ public class HtmlParser {
         }
 
         // artist name
-        int artistNameStart = html.indexOf(ARTIST_NAME);
-        int artistNameEnd = html.indexOf(";", artistNameStart);
-        String artistNameLine = html.substring(artistNameStart, artistNameEnd);
-        String artistName = artistNameLine.split("=")[1].trim().replace("\"", "");
+        int artistNameStart = html.indexOf(ARTIST_NAME) + ARTIST_NAME.length();
+        int artistNameEnd = html.indexOf("\"", artistNameStart);
+        String artistName = html.substring(artistNameStart, artistNameEnd);
+        artistName = clean(artistName);
 
         // song name
-        int songNameStart = html.indexOf(SONG_NAME);
-        int songNameEnd = html.indexOf(";", songNameStart);
-        String songNameLine = html.substring(songNameStart, songNameEnd);
-        String songName = songNameLine.split("=")[1].trim().replace("\"", "");
+        int songNameStart = html.indexOf(SONG_NAME) + SONG_NAME.length();
+        int songNameEnd = html.indexOf("\"", songNameStart);
+        String songName = html.substring(songNameStart, songNameEnd);
 
         // lyrics
         int lyricsStart = html.indexOf(LYRICS_START);
@@ -51,6 +50,10 @@ public class HtmlParser {
         lyrics.setArtistName(artistName);
         lyrics.setSongName(songName);
         return lyrics;
+    }
+
+    private static String clean(String str) {
+        return str.replace("&amp;", "&");
     }
 
 
