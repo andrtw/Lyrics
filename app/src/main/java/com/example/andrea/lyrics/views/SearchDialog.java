@@ -18,7 +18,9 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.example.andrea.lyrics.AutoCompleteAdapter;
+import com.example.andrea.lyrics.MainActivity;
 import com.example.andrea.lyrics.R;
+import com.example.andrea.lyrics.db.DbLyrics;
 
 /**
  * Created by andrea on 11/12/2017.
@@ -26,15 +28,17 @@ import com.example.andrea.lyrics.R;
 
 public class SearchDialog extends DialogFragment {
 
-    private static final String TAG = "SearchDialog";
-
     private SearchDialogListener mListener;
+
+    private DbLyrics mDb;
 
     private AutoCompleteTextView mSearchArtist, mSearchSong;
     private String mLastArtist = "", mLastSong = "";
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+        mDb = ((MainActivity) getActivity()).getDb();
+
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = getActivity().getLayoutInflater();
 
@@ -45,6 +49,8 @@ public class SearchDialog extends DialogFragment {
         mSearchSong = (AutoCompleteTextView) searchView.findViewById(R.id.search_song);
         mSearchArtist.setText(mLastArtist);
         mSearchSong.setText(mLastSong);
+        setupArtistAutocomplete();
+        setupSongAutocomplete();
 
         // search button and from last input
         ImageButton searchBtn = (ImageButton) searchView.findViewById(R.id.search_btn);
@@ -77,20 +83,20 @@ public class SearchDialog extends DialogFragment {
         return alertDialog;
     }
 
-    public void setLastArtist(String lastArtist) {
-        mLastArtist = lastArtist;
-    }
-
-    public void setLastSong(String lastSong) {
-        mLastSong = lastSong;
-    }
-
     public String getLastArtist() {
         return mLastArtist;
     }
 
+    public void setLastArtist(String lastArtist) {
+        mLastArtist = lastArtist;
+    }
+
     public String getLastSong() {
         return mLastSong;
+    }
+
+    public void setLastSong(String lastSong) {
+        mLastSong = lastSong;
     }
 
     public String getArtist() {
@@ -105,18 +111,6 @@ public class SearchDialog extends DialogFragment {
             return mSearchSong.getText().toString();
         }
         return "";
-    }
-
-    public void setArtistAutocompleteAdapter(AutoCompleteAdapter adapter) {
-        if (mSearchArtist != null) {
-            mSearchArtist.setAdapter(adapter);
-        }
-    }
-
-    public void setSongAutocompleteAdapter(AutoCompleteAdapter adapter) {
-        if (mSearchSong != null) {
-            mSearchSong.setAdapter(adapter);
-        }
     }
 
     public void hideKeyboard() {
@@ -139,6 +133,28 @@ public class SearchDialog extends DialogFragment {
         mLastArtist = mSearchArtist.getText().toString();
         mLastSong = mSearchSong.getText().toString();
         super.onDismiss(dialog);
+    }
+
+    private void setupArtistAutocomplete() {
+        AutoCompleteAdapter adapter = new AutoCompleteAdapter(getActivity(), mDb,
+                AutoCompleteAdapter.AUTOCOMPLETE_ARTIST, new AutoCompleteAdapter.AutocompleteListener() {
+            @Override
+            public void onDelete() {
+                setupArtistAutocomplete();
+            }
+        });
+        mSearchArtist.setAdapter(adapter);
+    }
+
+    private void setupSongAutocomplete() {
+        AutoCompleteAdapter adapter = new AutoCompleteAdapter(getActivity(), mDb,
+                AutoCompleteAdapter.AUTOCOMPLETE_SONG, new AutoCompleteAdapter.AutocompleteListener() {
+            @Override
+            public void onDelete() {
+                setupSongAutocomplete();
+            }
+        });
+        mSearchSong.setAdapter(adapter);
     }
 
     public interface SearchDialogListener {

@@ -58,9 +58,6 @@ public class MainActivity extends AppCompatActivity implements
                 RecentSearchesFragment.newInstance(db.getRecentSearches());
         changeFragment(recentSearchesFragment, "recent_searches_fragment");
 
-        setupArtistAutocomplete();
-        setupSongAutocomplete();
-
         broadcastReceiver = new SpotifyBroadcastReceiver(this, new SpotifyBroadcastReceiver.OnReceiveListener() {
             @Override
             public void onReceive(String artist, String song) {
@@ -97,6 +94,10 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+    public DbLyrics getDb() {
+        return db;
+    }
+
     private void search(final String artist, final String song) {
         Logger.debugMessage("Search: " + artist + ", " + song);
 
@@ -124,9 +125,7 @@ public class MainActivity extends AppCompatActivity implements
                         }
 
                         mSearchDialog.setLastArtist(lyrics.getArtistName());
-                        setupArtistAutocomplete();
                         mSearchDialog.setLastSong(lyrics.getSongName());
-                        setupSongAutocomplete();
 
                         broadcastReceiver.setArtistName(lyrics.getArtistName());
                         broadcastReceiver.setTrackName(lyrics.getSongName());
@@ -164,28 +163,6 @@ public class MainActivity extends AppCompatActivity implements
         db.addArtist(artist);
         db.addSong(song);
         db.addRecentSearch(artist, song);
-    }
-
-    private void setupArtistAutocomplete() {
-        AutoCompleteAdapter adapter = new AutoCompleteAdapter(MainActivity.this, db,
-                AutoCompleteAdapter.AUTOCOMPLETE_ARTIST, new AutoCompleteAdapter.AutocompleteListener() {
-            @Override
-            public void onDelete() {
-                setupArtistAutocomplete();
-            }
-        });
-        mSearchDialog.setArtistAutocompleteAdapter(adapter);
-    }
-
-    private void setupSongAutocomplete() {
-        AutoCompleteAdapter adapter = new AutoCompleteAdapter(MainActivity.this, db,
-                AutoCompleteAdapter.AUTOCOMPLETE_SONG, new AutoCompleteAdapter.AutocompleteListener() {
-            @Override
-            public void onDelete() {
-                setupSongAutocomplete();
-            }
-        });
-        mSearchDialog.setSongAutocompleteAdapter(adapter);
     }
 
     private HashMap<String, Object> handleLyricsErrors(Lyrics lyrics) {
