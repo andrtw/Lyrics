@@ -6,6 +6,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.text.Html;
 import android.view.ActionMode;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -32,6 +33,8 @@ public class LyricsFragment extends Fragment {
     private OnLyricsFragmentListener mListener;
 
     private Lyrics mLyrics;
+
+    private LinearLayout mLyricsLines;
 
     private List<TextView> mSelectedLines;
 
@@ -72,6 +75,15 @@ public class LyricsFragment extends Fragment {
                     // Action picked, so close the ActionMode
                     mode.finish();
                     return true;
+                case R.id.lyrics_action_mode_select_all:
+                    mSelectedLines.clear();
+                    for (int i = 0; i < mLyricsLines.getChildCount(); i++) {
+                        TextView line = (TextView) mLyricsLines.getChildAt(i);
+                        mSelectedLines.add(line);
+                        line.setBackgroundColor(getResources().getColor(R.color.lyrics_line_selected));
+                    }
+                    mode.setTitle("" + mLyricsLines.getChildCount());
+                    return true;
                 default:
                     return false;
             }
@@ -110,7 +122,7 @@ public class LyricsFragment extends Fragment {
 
         ScrollView scrollView = (ScrollView) view.findViewById(R.id.lyrics_scroll_view);
         TextView artistSongText = (TextView) view.findViewById(R.id.artist_song_text);
-        LinearLayout lyricsLines = (LinearLayout) view.findViewById(R.id.lyrics_lines);
+        mLyricsLines = (LinearLayout) view.findViewById(R.id.lyrics_lines);
 
         scrollView.smoothScrollTo(0, 0);
         artistSongText.setText(mLyrics.getArtistName() + " | " + mLyrics.getSongName());
@@ -122,7 +134,8 @@ public class LyricsFragment extends Fragment {
             final TextView lineTv = new TextView(getActivity());
             lineTv.setTextColor(getResources().getColor(R.color.light_gray));
             lineTv.setGravity(Gravity.CENTER);
-            lineTv.setText(line);
+            // lyrics may contain html syntax (italic, bold)
+            lineTv.setText(Html.fromHtml(line));
             lineTv.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -148,7 +161,7 @@ public class LyricsFragment extends Fragment {
                     return true;
                 }
             });
-            lyricsLines.addView(lineTv);
+            mLyricsLines.addView(lineTv);
         }
 
         return view;

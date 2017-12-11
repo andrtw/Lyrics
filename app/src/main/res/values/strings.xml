@@ -12,6 +12,7 @@
     <string name="search_menu">Search</string>
     <string name="settings_menu">Settings</string>
     <string name="lyrics_action_mode_copy">Copy</string>
+    <string name="lyrics_action_mode_select_all">Select all</string>
 
     <!-- Autocomplete -->
     <string name="delete_autocomplete_title">Delete</string>

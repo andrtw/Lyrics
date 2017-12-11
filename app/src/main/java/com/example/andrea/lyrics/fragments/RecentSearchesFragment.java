@@ -7,7 +7,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.example.andrea.lyrics.R;
@@ -26,7 +25,6 @@ public class RecentSearchesFragment extends Fragment {
     private List<RecentSearch> mRecentSearches;
 
     // UI
-    private ScrollView mRecentSearchesLayout;
     private LinearLayout mRecentSearchesGrid;
 
     public static RecentSearchesFragment newInstance(List<RecentSearch> recentSearches) {
@@ -49,7 +47,6 @@ public class RecentSearchesFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_recent_searches, container, false);
 
-        mRecentSearchesLayout = (ScrollView) view.findViewById(R.id.recents_layout);
         mRecentSearchesGrid = (LinearLayout) view.findViewById(R.id.recents_grid);
 
         populateRecentSearches(inflater);
