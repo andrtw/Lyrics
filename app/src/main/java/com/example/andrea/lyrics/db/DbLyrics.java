@@ -2,15 +2,13 @@ package com.example.andrea.lyrics.db;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.database.CrossProcessCursor;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.example.andrea.lyrics.model.AutoCompleteItem;
-import com.example.andrea.lyrics.model.Recent;
+import com.example.andrea.lyrics.model.RecentSearch;
 import com.example.andrea.lyrics.utils.Logger;
 
-import java.lang.reflect.MalformedParameterizedTypeException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,8 +51,8 @@ public class DbLyrics {
         dbHelper.drop(db);
     }
 
-    public void deleteRecents() {
-        dbHelper.deleteRecents(db);
+    public void deleteRecentSearches() {
+        dbHelper.deleteRecentSearches(db);
     }
 
     public AutoCompleteItem addArtist(String artistName) {
@@ -75,16 +73,16 @@ public class DbLyrics {
         return artist;
     }
 
-    public Recent addRecent(String artistName, String songName) {
-        List<Recent> recents = getRecents();
+    public RecentSearch addRecentSearch(String artistName, String songName) {
+        List<RecentSearch> recentSearches = getRecentSearches();
         // check if the same recent already exists
-        if (recents.contains(new Recent(-1, artistName, songName))) {
-            Logger.debugMessage("[DB] recent already exists. " + artistName + ", " + songName);
+        if (recentSearches.contains(new RecentSearch(-1, artistName, songName))) {
+            Logger.debugMessage("[DB] recent search already exists. " + artistName + ", " + songName);
             return null;
         }
-        // check if max num of recents is reached
-        if (recents.size() >= DbContract.RECENT_MAX) {
-            deleteFirstRecent();
+        // check if max num of recent searches is reached
+        if (recentSearches.size() >= DbContract.RECENT_MAX) {
+            deleteFirstRecentSearch();
         }
         ContentValues values = new ContentValues();
         values.put(DbContract.RECENT_ARTIST_NAME, artistName);
@@ -93,10 +91,10 @@ public class DbLyrics {
         Cursor cursor = db.query(DbContract.TABLE_RECENT, ALL_COLUMNS_RECENT,
                 DbContract.RECENT_ID + " = " + insertId, null, null, null, null);
         cursor.moveToFirst();
-        Recent recent = cursorToRecent(cursor);
+        RecentSearch recentSearch = cursorToRecentSearch(cursor);
         cursor.close();
-        Logger.debugMessage("[DB] added recent. " + recent.toString());
-        return recent;
+        Logger.debugMessage("[DB] added recent search. " + recentSearch.toString());
+        return recentSearch;
     }
 
     public AutoCompleteItem addSong(String songName) {
@@ -129,7 +127,7 @@ public class DbLyrics {
         Logger.debugMessage("[DB] deleted song. " + song.print());
     }
 
-    private void deleteFirstRecent() {
+    private void deleteFirstRecentSearch() {
         Cursor cursor = db.query(DbContract.TABLE_RECENT, ALL_COLUMNS_RECENT,
                 null, null, null, null, null);
         if (cursor.moveToFirst()) {
@@ -169,19 +167,19 @@ public class DbLyrics {
         return songs;
     }
 
-    public List<Recent> getRecents() {
-        List<Recent> recent = new ArrayList<>();
+    public List<RecentSearch> getRecentSearches() {
+        List<RecentSearch> recentSearches = new ArrayList<>();
 
         Cursor cursor = db.query(DbContract.TABLE_RECENT, ALL_COLUMNS_RECENT,
                 null, null, null, null, null);
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
-            Recent r = cursorToRecent(cursor);
-            recent.add(r);
+            RecentSearch r = cursorToRecentSearch(cursor);
+            recentSearches.add(r);
             cursor.moveToNext();
         }
         cursor.close();
-        return recent;
+        return recentSearches;
     }
 
 
@@ -199,8 +197,8 @@ public class DbLyrics {
                 cursor.getString(cursor.getColumnIndex(DbContract.SONG_NAME)));
     }
 
-    private Recent cursorToRecent(Cursor cursor) {
-        return new Recent(
+    private RecentSearch cursorToRecentSearch(Cursor cursor) {
+        return new RecentSearch(
                 cursor.getLong(cursor.getColumnIndex(DbContract.RECENT_ID)),
                 cursor.getString(cursor.getColumnIndex(DbContract.RECENT_ARTIST_NAME)),
                 cursor.getString(cursor.getColumnIndex(DbContract.RECENT_SONG_NAME)));

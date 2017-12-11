@@ -14,23 +14,20 @@ import android.widget.TextView;
 import com.example.andrea.lyrics.db.DbLyrics;
 import com.example.andrea.lyrics.model.AutoCompleteItem;
 
-import java.util.List;
-
 /**
  * Created by andrea on 31/03/17.
  */
 
 public class AutoCompleteAdapter extends ArrayAdapter<AutoCompleteItem> {
 
+    public static final int AUTOCOMPLETE_ARTIST = 0;
+    public static final int AUTOCOMPLETE_SONG = 1;
+
     private DbLyrics db;
     private AutocompleteListener listener;
 
-    public interface AutocompleteListener {
-        void onDelete();
-    }
-
-    public AutoCompleteAdapter(Context context, List<AutoCompleteItem> objects, DbLyrics db, AutocompleteListener listener) {
-        super(context, 0, objects);
+    public AutoCompleteAdapter(Context context, DbLyrics db, int autocomplete, AutocompleteListener listener) {
+        super(context, 0, autocomplete == AUTOCOMPLETE_ARTIST ? db.getArtists() : db.getSongs());
         this.db = db;
         this.listener = listener;
     }
@@ -83,5 +80,9 @@ public class AutoCompleteAdapter extends ArrayAdapter<AutoCompleteItem> {
         });
 
         return convertView;
+    }
+
+    public interface AutocompleteListener {
+        void onDelete();
     }
 }

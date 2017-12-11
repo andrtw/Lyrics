@@ -1,59 +1,40 @@
 package com.example.andrea.lyrics;
 
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.text.Html;
-import android.util.Log;
-import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.AutoCompleteTextView;
-import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
-import android.widget.ScrollView;
-import android.widget.TextView;
 
 import com.example.andrea.lyrics.db.DbLyrics;
+import com.example.andrea.lyrics.fragments.LyricsFragment;
+import com.example.andrea.lyrics.fragments.RecentSearchesFragment;
 import com.example.andrea.lyrics.model.Lyrics;
-import com.example.andrea.lyrics.model.Recent;
-import com.example.andrea.lyrics.utils.Animations;
 import com.example.andrea.lyrics.utils.HtmlParser;
 import com.example.andrea.lyrics.utils.Logger;
 import com.example.andrea.lyrics.utils.LyricsDownloader;
-import com.example.andrea.lyrics.views.InterceptableScrollView;
+import com.example.andrea.lyrics.views.SearchDialog;
 
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements
+        RecentSearchesFragment.OnRecentSearchesFragmentListener,
+        LyricsFragment.OnLyricsFragmentListener,
+        SearchDialog.SearchDialogListener {
 
     // UI
     private ProgressBar progress;
-    // lyrics
-    private RelativeLayout lyricsLayout;
-    private InterceptableScrollView scrollView;
-    private TextView lyricsText;
-    private TextView artistSongText;
-    // search
-    private RelativeLayout searchLayout;
-    private AutoCompleteTextView searchArtist, searchSong;
-    // recents
-    private ScrollView recentsLayout;
-    private LinearLayout recentsGrid;
+
+    // search dialog
+    private SearchDialog mSearchDialog;
 
     private SpotifyBroadcastReceiver broadcastReceiver;
     private DbLyrics db;
@@ -70,147 +51,62 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         progress = (ProgressBar) findViewById(R.id.progress);
 
-        // lyrics
-        lyricsLayout = (RelativeLayout) findViewById(R.id.lyrics_layout);
-        scrollView = (InterceptableScrollView) findViewById(R.id.scroll_view);
-        lyricsText = (TextView) findViewById(R.id.lyrics_text);
-        artistSongText = (TextView) findViewById(R.id.artist_song_text);
+        mSearchDialog = new SearchDialog();
 
-        // search
-        searchLayout = (RelativeLayout) findViewById(R.id.search_layout);
-        searchArtist = (AutoCompleteTextView) findViewById(R.id.search_artist);
-        searchSong = (AutoCompleteTextView) findViewById(R.id.search_song);
-        ImageButton searchBtn = (ImageButton) findViewById(R.id.search_btn);
-        TextView clearArtist = (TextView) findViewById(R.id.clear_artist);
-        TextView clearSong = (TextView) findViewById(R.id.clear_song);
-
-        // recents
-        recentsLayout = (ScrollView) findViewById(R.id.recents_layout);
-        recentsGrid = (LinearLayout) findViewById(R.id.recents_grid);
-        populateRecents();
-
-        searchBtn.setOnClickListener(this);
-        clearArtist.setOnClickListener(this);
-        clearSong.setOnClickListener(this);
+        // load the default fragment (recent searches)
+        RecentSearchesFragment recentSearchesFragment =
+                RecentSearchesFragment.newInstance(db.getRecentSearches());
+        changeFragment(recentSearchesFragment, "recent_searches_fragment");
 
         setupArtistAutocomplete();
         setupSongAutocomplete();
 
-        searchSong.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                    doSearch(searchArtist.getText().toString().trim(), searchSong.getText().toString().trim());
-                    return true;
-                }
-                return false;
-            }
-        });
-
         broadcastReceiver = new SpotifyBroadcastReceiver(this, new SpotifyBroadcastReceiver.OnReceiveListener() {
             @Override
             public void onReceive(String artist, String song) {
-                if (searchLayout.getVisibility() != View.VISIBLE) {
-                    search(artist, song);
-                }
+                search(artist, song);
             }
         });
 
-        restoreState(savedInstanceState);
+        // restore search dialog artist and song
+        if (savedInstanceState != null) {
+            String lastArtist = "", lastSong = "";
+            if (savedInstanceState.containsKey("search_artist")) {
+                lastArtist = savedInstanceState.getString("search_artist");
+                mSearchDialog.setLastArtist(lastArtist);
+            }
+            if (savedInstanceState.containsKey("search_song")) {
+                lastSong = savedInstanceState.getString("search_song");
+                mSearchDialog.setLastSong(lastSong);
+            }
+            // do search if needed
+            if (!lastArtist.isEmpty() && !lastSong.isEmpty()) {
+                search(lastArtist, lastSong);
+            }
+        }
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        outState.putBoolean("search_open", searchLayout.getVisibility() == View.VISIBLE);
-        outState.putString("search_artist", searchArtist.getText().toString());
-        outState.putString("search_song", searchSong.getText().toString());
-    }
-
-    private void restoreState(Bundle savedInstanceState) {
-        if (savedInstanceState != null) {
-            // search layout
-            Boolean searchOpen = getSavedInstanceValue(savedInstanceState, "search_open");
-            if (searchOpen != null) {
-                if (searchOpen) openSearch();
-                else closeSearch();
-            }
-
-            // artist name
-            String artist = getSavedInstanceValue(savedInstanceState, "search_artist");
-            if (artist != null) {
-                searchArtist.setText(artist);
-            }
-
-            // song name
-            String song = getSavedInstanceValue(savedInstanceState, "search_song");
-            if (song != null) {
-                searchSong.setText(song);
-            }
-
-            // do search if needed
-            if (artist != null && song != null) {
-                doSearch(searchArtist.getText().toString().trim(), searchSong.getText().toString().trim());
-            }
-        }
-    }
-
-    private void populateRecents() {
-        List<Recent> recents = db.getRecents();
-        Collections.reverse(recents);
-        recentsGrid.removeAllViews();
-
-        LayoutInflater inflater = getLayoutInflater();
-
-        for (final Recent r : recents) {
-            View v = inflater.inflate(R.layout.recent, null);
-            ((TextView) v.findViewById(R.id.recent_artist_name)).setText(r.getArtistName());
-            ((TextView) v.findViewById(R.id.recent_song_name)).setText(r.getSongName());
-            v.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    search(r.getArtistName(), r.getSongName());
-                }
-            });
-            // for some reason setting the margins in the layout file doesn't work
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            int smPad = (int) getResources().getDimension(R.dimen.sm_padding);
-            params.topMargin = smPad;
-            params.bottomMargin = smPad;
-            params.leftMargin = smPad;
-            params.rightMargin = smPad;
-            recentsGrid.addView(v, params);
-        }
-    }
-
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.search_btn: {
-                doSearch(searchArtist.getText().toString().trim(), searchSong.getText().toString().trim());
-            }
-            break;
-            case R.id.clear_artist: {
-                searchArtist.setText("");
-                searchArtist.requestFocus();
-            }
-            break;
-            case R.id.clear_song: {
-                searchSong.setText("");
-                searchSong.requestFocus();
-            }
-            break;
+        if (isSearchDialogVisible()) {
+            outState.putString("search_artist", mSearchDialog.getArtist());
+            outState.putString("search_song", mSearchDialog.getSong());
+        } else {
+            outState.putString("search_artist", mSearchDialog.getLastArtist());
+            outState.putString("search_song", mSearchDialog.getLastSong());
         }
     }
 
     private void search(final String artist, final String song) {
-        Logger.debugMessage("search: " + artist + ", " + song);
+        Logger.debugMessage("Search: " + artist + ", " + song);
 
-        closeSearch();
-        setProgress(true);
+        setProgressVisible(true);
+        hideSearchDialog();
+
         LyricsDownloader.getSourceCode(artist, song, new LyricsDownloader.DownloadListener() {
             @Override
             public void onComplete(String html) {
-                setProgress(false);
+                setProgressVisible(false);
 
                 final HashMap<String, Object> parsed = handleLyricsErrors(HtmlParser.parseSourceCode(html));
                 final Lyrics lyrics = (Lyrics) parsed.get("lyrics");
@@ -219,32 +115,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        lyricsText.setText(Html.fromHtml(lyrics.getLyrics()));
-                        artistSongText.setText(lyrics.getArtistName() + " | " + lyrics.getSongName());
-                        closeSearch();
+                        LyricsFragment lyricsFragment = LyricsFragment.newInstance(lyrics);
+                        changeFragment(lyricsFragment, "lyrics_fragment");
 
+                        // save artist and song for autocomplete suggestions
                         if (!errors) {
                             saveArtistAndSong(lyrics.getArtistName(), lyrics.getSongName());
                         }
 
-                        searchArtist.setText(lyrics.getArtistName());
+                        mSearchDialog.setLastArtist(lyrics.getArtistName());
                         setupArtistAutocomplete();
-
-                        searchSong.setText(lyrics.getSongName());
+                        mSearchDialog.setLastSong(lyrics.getSongName());
                         setupSongAutocomplete();
 
                         broadcastReceiver.setArtistName(lyrics.getArtistName());
                         broadcastReceiver.setTrackName(lyrics.getSongName());
-
-                        Animations.close(MainActivity.this, recentsLayout);
-                        Animations.open(MainActivity.this, lyricsLayout);
                     }
                 });
             }
 
             @Override
             public void onError() {
-                setProgress(false);
+                setProgressVisible(false);
 
                 handler.post(new Runnable() {
                     @Override
@@ -268,57 +160,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
     }
 
-    private void doSearch(String artist, String song) {
-        Logger.debugMessage("doSearch: " + artist + ", " + song);
-
-        if (artist.isEmpty() && song.isEmpty()) {
-            closeSearch();
-            searchArtist.setText("");
-            searchSong.setText("");
-        } else {
-            search(artist, song);
-        }
-        scrollView.smoothScrollTo(0, 0);
-    }
-
     private void saveArtistAndSong(String artist, String song) {
         db.addArtist(artist);
         db.addSong(song);
-        db.addRecent(artist, song);
-    }
-
-    private void openSearch() {
-        Animations.open(this, searchLayout);
-        scrollView.setScrollable(false);
-    }
-
-    private void closeSearch() {
-        Animations.close(this, searchLayout);
-        scrollView.setScrollable(true);
-        // hide keyboard
-        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(searchArtist.getWindowToken(), 0);
-        imm.hideSoftInputFromWindow(searchSong.getWindowToken(), 0);
+        db.addRecentSearch(artist, song);
     }
 
     private void setupArtistAutocomplete() {
-        AutoCompleteAdapter artistAutocomplete = new AutoCompleteAdapter(MainActivity.this, db.getArtists(), db, new AutoCompleteAdapter.AutocompleteListener() {
+        AutoCompleteAdapter adapter = new AutoCompleteAdapter(MainActivity.this, db,
+                AutoCompleteAdapter.AUTOCOMPLETE_ARTIST, new AutoCompleteAdapter.AutocompleteListener() {
             @Override
             public void onDelete() {
                 setupArtistAutocomplete();
             }
         });
-        searchArtist.setAdapter(artistAutocomplete);
+        mSearchDialog.setArtistAutocompleteAdapter(adapter);
     }
 
     private void setupSongAutocomplete() {
-        AutoCompleteAdapter songAutocomplete = new AutoCompleteAdapter(MainActivity.this, db.getSongs(), db, new AutoCompleteAdapter.AutocompleteListener() {
+        AutoCompleteAdapter adapter = new AutoCompleteAdapter(MainActivity.this, db,
+                AutoCompleteAdapter.AUTOCOMPLETE_SONG, new AutoCompleteAdapter.AutocompleteListener() {
             @Override
             public void onDelete() {
                 setupSongAutocomplete();
             }
         });
-        searchSong.setAdapter(songAutocomplete);
+        mSearchDialog.setSongAutocompleteAdapter(adapter);
     }
 
     private HashMap<String, Object> handleLyricsErrors(Lyrics lyrics) {
@@ -345,27 +212,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_home:
-                populateRecents();
-                Animations.close(MainActivity.this, searchLayout);
-                Animations.close(MainActivity.this, lyricsLayout);
-                Animations.open(MainActivity.this, recentsLayout);
+                // go to home (recent searches)
+                RecentSearchesFragment recentSearchesFragment = RecentSearchesFragment.newInstance(db.getRecentSearches());
+                changeFragment(recentSearchesFragment, "recent_searches_fragment");
                 return true;
             case R.id.menu_search_current:
-                doSearch(broadcastReceiver.getArtistName(), broadcastReceiver.getTrackName());
+                // search current playing song
+                search(broadcastReceiver.getArtistName(), broadcastReceiver.getTrackName());
                 return true;
             case R.id.menu_search:
-                int visibility = searchLayout.getVisibility();
-                if (visibility != View.VISIBLE) {
-                    if (recentsLayout.getVisibility() == View.VISIBLE) {
-                        Animations.close(MainActivity.this, recentsLayout);
-                        Animations.open(MainActivity.this, lyricsLayout);
-                    }
-                    openSearch();
-                } else {
-                    closeSearch();
-                }
+                // show search dialog
+                showSearchDialog();
                 return true;
             case R.id.menu_settings:
+                // go to settings
                 startActivity(new Intent(MainActivity.this, SettingsActivity.class));
                 return true;
             default:
@@ -374,24 +234,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
-    public void onBackPressed() {
-        if (searchLayout.getVisibility() == View.VISIBLE) {
-            closeSearch();
-            return;
-        }
-        super.onBackPressed();
-    }
-
-    @Override
     protected void onResume() {
         db.open();
-
         registerReceiver();
-
-        if (recentsLayout.getVisibility() == View.VISIBLE) {
-            populateRecents();
-        }
-
         super.onResume();
     }
 
@@ -418,14 +263,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private <T> T getSavedInstanceValue(Bundle savedInstanceBundle, String key) {
-        if (savedInstanceBundle.containsKey(key)) {
-            return (T) savedInstanceBundle.get(key);
-        }
-        return null;
-    }
-
-    private void setProgress(final boolean visible) {
+    private void setProgressVisible(final boolean visible) {
         handler.post(new Runnable() {
             @Override
             public void run() {
@@ -433,5 +271,45 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 else progress.setVisibility(View.INVISIBLE);
             }
         });
+    }
+
+    private void changeFragment(Fragment fragment, String tag) {
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.container, fragment, tag)
+                .commit();
+    }
+
+    private void showSearchDialog() {
+        mSearchDialog.show(getSupportFragmentManager(), "search_dialog");
+    }
+
+    private void hideSearchDialog() {
+        // the search dialog might have not been added yet and it would take to a NPE
+        if (isSearchDialogVisible()) {
+            mSearchDialog.dismiss();
+            mSearchDialog.hideKeyboard();
+        }
+    }
+
+    private boolean isSearchDialogVisible() {
+        return mSearchDialog.isAdded();
+    }
+
+    @Override
+    public void onRecentSearchClick(String artistName, String songName) {
+        search(artistName, songName);
+    }
+
+    @Override
+    public void onSearch(String artistName, String songName) {
+        search(artistName.trim(), songName.trim());
+    }
+
+    @Override
+    public void onSearchWithIME(int actionId, String artistName, String songName) {
+        if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+            search(artistName, songName);
+        }
     }
 }

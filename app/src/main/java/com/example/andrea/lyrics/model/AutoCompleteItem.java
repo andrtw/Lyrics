@@ -9,39 +9,39 @@ public class AutoCompleteItem {
     public static final int TYPE_ARTIST = 0;
     public static final int TYPE_SONG = 1;
 
-    private long id;
-    private int type;
-    private String name;
+    private long mId;
+    private int mType;
+    private String mName;
 
     public AutoCompleteItem(long id, int type, String name) {
-        this.id = id;
-        this.type = type;
-        this.name = name;
+        this.mId = id;
+        this.mType = type;
+        this.mName = name;
     }
 
     public long getId() {
-        return id;
+        return mId;
     }
 
     public String getName() {
-        return name;
+        return mName;
     }
 
     public int getType() {
-        return type;
+        return mType;
     }
 
     public String print() {
-        return "ID: " + id + ", TYPE: " + parseType() + ", NAME: " + name;
+        return "ID: " + mId + ", TYPE: " + parseType() + ", NAME: " + mName;
     }
 
     @Override
     public String toString() {
-        return name;
+        return mName;
     }
 
     private String parseType() {
-        switch (type) {
+        switch (mType) {
             case TYPE_ARTIST: return "artist";
             case TYPE_SONG: return "song";
             default: throw new RuntimeException("Unknown type");

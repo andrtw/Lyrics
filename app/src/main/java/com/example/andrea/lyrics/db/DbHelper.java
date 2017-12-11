@@ -53,7 +53,7 @@ public class DbHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + DbContract.TABLE_RECENT);
     }
 
-    public void deleteRecents(SQLiteDatabase db) {
+    public void deleteRecentSearches(SQLiteDatabase db) {
         db.delete(DbContract.TABLE_RECENT, null, null);
     }
 

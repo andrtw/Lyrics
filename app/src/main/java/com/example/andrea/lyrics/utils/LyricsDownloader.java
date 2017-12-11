@@ -4,8 +4,6 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
-import com.example.andrea.lyrics.model.Lyrics;
-
 import java.io.IOException;
 
 import okhttp3.Call;
@@ -20,12 +18,12 @@ import okhttp3.Response;
 
 public class LyricsDownloader {
 
-    private static OkHttpClient client;
+    private static OkHttpClient mClient;
     private static final String NOT_FOUND = "<h1>Welcome to AZLyrics!</h1>";
     public static final String NOT_FOUND_CODE = "not_found";
 
     static {
-        client = new OkHttpClient();
+        mClient = new OkHttpClient();
     }
 
     public interface DownloadListener {
@@ -45,7 +43,7 @@ public class LyricsDownloader {
                 Request request = new Request.Builder()
                         .url("http://www.azlyrics.com/lyrics/" + cleanedArtist + "/" + cleanedSong + ".html")
                         .build();
-                client.newCall(request).enqueue(new Callback() {
+                mClient.newCall(request).enqueue(new Callback() {
                     @Override
                     public void onFailure(Call call, IOException e) {
                         Logger.debugError("error downloading: " + e.getMessage());

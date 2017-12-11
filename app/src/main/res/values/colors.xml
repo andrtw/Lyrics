@@ -6,7 +6,6 @@
     <color name="white">#fff</color>
     <color name="light_gray">#BDBDBD</color>
 
-    <color name="search_overlay">#88000000</color>
     <color name="search_background">#ccc</color>
     <color name="search_btn">#BDBDBD</color>
     <color name="search_btn_pressed">#959595</color>

@@ -49,7 +49,7 @@ public class SettingsActivity extends AppCompatActivity {
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 DbLyrics db = new DbLyrics(SettingsActivity.this);
                                 db.open();
-                                db.deleteRecents();
+                                db.deleteRecentSearches();
                                 db.close();
                             }
                         })

@@ -3,58 +3,37 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/light_gray"
     android:orientation="vertical"
     tools:context="com.example.andrea.lyrics.SettingsActivity">
 
     <LinearLayout
         android:id="@+id/layout_auto_search"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="@dimen/sm_padding">
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+        style="@style/SettingItemContainer">
+        <LinearLayout style="@style/SettingItem">
             <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/setting_auto_search_label"
-                android:gravity="center_vertical"
-                android:textSize="@dimen/setting_text_size" />
+                style="@style/SettingItemTitle"
+                android:text="@string/setting_auto_search_label" />
             <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                style="@style/SettingItemDescription"
                 android:text="@string/setting_auto_search_descr" />
         </LinearLayout>
         <Switch
             android:id="@+id/auto_search_switch"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:checked="true"/>
+            android:checked="true" />
     </LinearLayout>
 
     <LinearLayout
         android:id="@+id/layout_delete_recents"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="@dimen/sm_padding">
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+        style="@style/SettingItemContainer">
+        <LinearLayout style="@style/SettingItem">
             <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/setting_delete_recents_label"
-                android:gravity="center_vertical"
-                android:textSize="@dimen/setting_text_size" />
+                style="@style/SettingItemTitle"
+                android:text="@string/setting_delete_recents_label" />
             <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                style="@style/SettingItemDescription"
                 android:text="@string/setting_delete_recents_descr" />
         </LinearLayout>
     </LinearLayout>

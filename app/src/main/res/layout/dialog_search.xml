@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/search_background"
+    android:padding="@dimen/sm_padding">
+
+    <!-- artist name -->
+    <LinearLayout
+        android:id="@+id/search_artist_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <AutoCompleteTextView
+            android:id="@+id/search_artist"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="@string/artist_hint"
+            android:imeOptions="actionNext"
+            android:inputType="textCapWords"
+            android:lines="1"
+            android:maxLines="1" />
+
+        <TextView
+            android:id="@+id/clear_artist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/sm_padding"
+            android:text="x"
+            android:textSize="20sp" />
+    </LinearLayout>
+
+    <!-- song name -->
+    <LinearLayout
+        android:id="@+id/search_song_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/search_artist_layout"
+        android:orientation="horizontal">
+
+        <AutoCompleteTextView
+            android:id="@+id/search_song"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="@string/song_hint"
+            android:imeOptions="actionSearch"
+            android:inputType="textCapWords"
+            android:lines="1"
+            android:maxLines="1" />
+
+        <TextView
+            android:id="@+id/clear_song"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/sm_padding"
+            android:text="x"
+            android:textSize="20sp" />
+    </LinearLayout>
+
+    <!-- search button -->
+    <ImageButton
+        android:id="@+id/search_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/search_song_layout"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="@dimen/sm_padding"
+        android:background="@drawable/search_button_bg"
+        android:padding="@dimen/sm_padding"
+        android:src="@drawable/ic_search_dark_48"
+        android:text="@string/search_button" />
+
+</RelativeLayout>
