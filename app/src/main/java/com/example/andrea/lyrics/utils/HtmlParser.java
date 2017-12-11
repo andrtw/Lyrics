@@ -9,7 +9,7 @@ import com.example.andrea.lyrics.model.Lyrics;
 public class HtmlParser {
 
     private static final String LYRICS_START = "<!-- Usage of azlyrics.com content by any third-party lyrics provider is prohibited by our licensing agreement. Sorry about that. -->";
-    private static final String LYRICS_END = "<!-- MxM banner -->";
+    private static final String LYRICS_END = "</div>";
     private static final String COMMENT_START = "<!--";
     private static final String COMMENT_END = "-->";
     private static final String ARTIST_NAME = "ArtistName = \"";
@@ -45,6 +45,7 @@ public class HtmlParser {
         int toRemoveStart = html.indexOf(COMMENT_START);
         int toRemoveEnd = html.indexOf(COMMENT_END) + COMMENT_END.length();
         html = html.replace(html.substring(toRemoveStart, toRemoveEnd), "");
+        html = html.replace("\n", "");
 
         lyrics.setLyrics(html);
         lyrics.setArtistName(artistName);

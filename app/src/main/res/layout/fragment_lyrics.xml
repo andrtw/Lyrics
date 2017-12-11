@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     tools:context="com.example.andrea.lyrics.fragments.LyricsFragment">
 
-    <com.example.andrea.lyrics.views.InterceptableScrollView
+    <ScrollView
         android:id="@+id/lyrics_scroll_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -25,13 +25,14 @@
                 android:textSize="20sp"
                 android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/lyrics_text"
+            <LinearLayout
+                android:id="@+id/lyrics_lines"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:textColor="@color/light_gray" />
+                android:orientation="vertical"
+                android:layout_marginBottom="@dimen/md_padding"/>
+
         </LinearLayout>
-    </com.example.andrea.lyrics.views.InterceptableScrollView>
+    </ScrollView>
 
 </RelativeLayout>

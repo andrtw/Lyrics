@@ -11,6 +11,7 @@
     <string name="search_current_menu">Search current</string>
     <string name="search_menu">Search</string>
     <string name="settings_menu">Settings</string>
+    <string name="lyrics_action_mode_copy">Copy</string>
 
     <!-- Autocomplete -->
     <string name="delete_autocomplete_title">Delete</string>
@@ -29,5 +30,8 @@
     <string name="setting_delete_recents_descr">All the recent searches will be deleted\n<b>Warning</b>: cannot undo</string>
     <string name="dialog_delete_recents_title">Delete recent searches</string>
     <string name="dialog_delete_recents_message">Are you sure you want to delete all recent searches?</string>
+
+    <!-- Toasts -->
+    <string name="lyrics_lines_copied">Copied to clipboard!</string>
 
 </resources>
