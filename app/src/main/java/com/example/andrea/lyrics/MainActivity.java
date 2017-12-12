@@ -116,24 +116,22 @@ public class MainActivity extends AppCompatActivity implements
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        LyricsFragment lyricsFragment = LyricsFragment.newInstance(lyrics);
                         try {
+                            LyricsFragment lyricsFragment = LyricsFragment.newInstance(lyrics);
                             changeFragment(lyricsFragment, "lyrics_fragment");
+                            // save artist and song for autocomplete suggestions
+                            if (!errors) {
+                                saveArtistAndSong(lyrics.getArtistName(), lyrics.getSongName());
+                            }
+
+                            mSearchDialog.setLastArtist(lyrics.getArtistName());
+                            mSearchDialog.setLastSong(lyrics.getSongName());
+
+                            broadcastReceiver.setArtistName(lyrics.getArtistName());
+                            broadcastReceiver.setTrackName(lyrics.getSongName());
                         } catch (IllegalStateException e) {
                             Logger.debugError(e.getMessage());
-                            return;
                         }
-
-                        // save artist and song for autocomplete suggestions
-                        if (!errors) {
-                            saveArtistAndSong(lyrics.getArtistName(), lyrics.getSongName());
-                        }
-
-                        mSearchDialog.setLastArtist(lyrics.getArtistName());
-                        mSearchDialog.setLastSong(lyrics.getSongName());
-
-                        broadcastReceiver.setArtistName(lyrics.getArtistName());
-                        broadcastReceiver.setTrackName(lyrics.getSongName());
                     }
                 });
             }
@@ -263,7 +261,9 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void showSearchDialog() {
-        mSearchDialog.show(getSupportFragmentManager(), "search_dialog");
+        if (!isSearchDialogVisible()) {
+            mSearchDialog.show(getSupportFragmentManager(), "search_dialog");
+        }
     }
 
     private void hideSearchDialog() {

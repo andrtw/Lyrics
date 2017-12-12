@@ -20,8 +20,8 @@ public class HtmlParser {
 
         if (html.equals(LyricsDownloader.NOT_FOUND_CODE)) {
             lyrics.setLyrics(html);
-            lyrics.setArtistName("noartist");
-            lyrics.setSongName("nosong");
+            lyrics.setArtistName("");
+            lyrics.setSongName("");
             return lyrics;
         }
 
