@@ -23,9 +23,6 @@ import android.widget.Toast;
 import com.example.andrea.lyrics.R;
 import com.example.andrea.lyrics.model.Lyrics;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class LyricsFragment extends Fragment {
 
     private static final String ARG_LYRICS = "lyrics";
@@ -36,7 +33,7 @@ public class LyricsFragment extends Fragment {
 
     private LinearLayout mLyricsLines;
 
-    private List<TextView> mSelectedLines;
+    private int mLinesSelected = 0;
 
     private ActionMode mActionMode;
     private ActionMode.Callback mActionModeCallback = new ActionMode.Callback() {
@@ -64,9 +61,12 @@ public class LyricsFragment extends Fragment {
                 case R.id.lyrics_action_mode_copy:
                     // build string to copy based on the selected lines
                     StringBuilder lines = new StringBuilder();
-                    for (int i = 0; i < mSelectedLines.size(); i++) {
-                        lines.append(mSelectedLines.get(i).getText().toString());
-                        if (i != mSelectedLines.size() - 1) {
+                    for (int i = 0; i < mLyricsLines.getChildCount(); i++) {
+                        TextView line = (TextView) mLyricsLines.getChildAt(i);
+                        LyricsLineInfo info = getLyricsLineInfo(line);
+
+                        if (info.selected) {
+                            lines.append(line.getText().toString());
                             lines.append("\n");
                         }
                     }
@@ -76,13 +76,16 @@ public class LyricsFragment extends Fragment {
                     mode.finish();
                     return true;
                 case R.id.lyrics_action_mode_select_all:
-                    mSelectedLines.clear();
                     for (int i = 0; i < mLyricsLines.getChildCount(); i++) {
                         TextView line = (TextView) mLyricsLines.getChildAt(i);
-                        mSelectedLines.add(line);
+                        LyricsLineInfo info = getLyricsLineInfo(line);
+                        info.selected = true;
+                        line.setTag(info);
                         line.setBackgroundColor(getResources().getColor(R.color.lyrics_line_selected));
+
+                        mLinesSelected++;
                     }
-                    mode.setTitle("" + mLyricsLines.getChildCount());
+                    mode.setTitle("" + mLinesSelected);
                     return true;
                 default:
                     return false;
@@ -92,10 +95,14 @@ public class LyricsFragment extends Fragment {
         // Called when the user exits the action mode
         @Override
         public void onDestroyActionMode(ActionMode mode) {
-            for (TextView line : mSelectedLines) {
+            for (int i = 0; i < mLyricsLines.getChildCount(); i++) {
+                TextView line = (TextView) mLyricsLines.getChildAt(i);
+                LyricsLineInfo info = getLyricsLineInfo(line);
+                info.selected = false;
+                line.setTag(info);
                 line.setBackgroundColor(0);
             }
-            mSelectedLines.clear();
+            mLinesSelected = 0;
             mActionMode = null;
         }
     };
@@ -127,8 +134,6 @@ public class LyricsFragment extends Fragment {
         scrollView.smoothScrollTo(0, 0);
         artistSongText.setText(mLyrics.getArtistName() + " | " + mLyrics.getSongName());
 
-        mSelectedLines = new ArrayList<>();
-
         String[] lines = mLyrics.getLyrics().split("<br>");
         for (String line : lines) {
             final TextView lineTv = new TextView(getActivity());
@@ -136,11 +141,12 @@ public class LyricsFragment extends Fragment {
             lineTv.setGravity(Gravity.CENTER);
             // lyrics may contain html syntax (italic, bold)
             lineTv.setText(Html.fromHtml(line));
+            lineTv.setTag(new LyricsLineInfo());
             lineTv.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     // if some lines are already selected, then select
-                    if (mSelectedLines.size() > 0) {
+                    if (mLinesSelected > 0) {
                         toggleLyricsLineSelected(lineTv);
                     }
                     // otherwise copy
@@ -169,23 +175,31 @@ public class LyricsFragment extends Fragment {
 
     private void toggleLyricsLineSelected(TextView textView) {
         // deselect
-        if (mSelectedLines.contains(textView)) {
-            mSelectedLines.remove(textView);
+        if (getLyricsLineInfo(textView).selected) {
+            LyricsLineInfo info = getLyricsLineInfo(textView);
+            info.selected = false;
+            textView.setTag(info);
             textView.setBackgroundColor(0);
 
+            mLinesSelected--;
+
             // close action mode is all items are deselected
-            if (mSelectedLines.size() <= 0) {
+            if (mLinesSelected <= 0) {
                 mActionMode.finish();
             }
         }
         // select
         else {
-            mSelectedLines.add(textView);
+            LyricsLineInfo info = getLyricsLineInfo(textView);
+            info.selected = true;
+            textView.setTag(info);
             textView.setBackgroundColor(getResources().getColor(R.color.lyrics_line_selected));
+
+            mLinesSelected++;
         }
         // update action mode title
         if (mActionMode != null) {
-            mActionMode.setTitle("" + mSelectedLines.size());
+            mActionMode.setTitle("" + mLinesSelected);
         }
     }
 
@@ -212,8 +226,15 @@ public class LyricsFragment extends Fragment {
         mListener = null;
     }
 
+    private LyricsLineInfo getLyricsLineInfo(TextView textView) {
+        return (LyricsLineInfo) textView.getTag();
+    }
+
     public interface OnLyricsFragmentListener {
     }
 
+    private class LyricsLineInfo {
+        public boolean selected = false;
+    }
 
 }
