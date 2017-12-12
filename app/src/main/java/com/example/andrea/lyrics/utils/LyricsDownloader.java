@@ -18,17 +18,12 @@ import okhttp3.Response;
 
 public class LyricsDownloader {
 
-    private static OkHttpClient mClient;
-    private static final String NOT_FOUND = "<h1>Welcome to AZLyrics!</h1>";
     public static final String NOT_FOUND_CODE = "not_found";
+    private static final String NOT_FOUND = "<h1>Welcome to AZLyrics!</h1>";
+    private static OkHttpClient mClient;
 
     static {
         mClient = new OkHttpClient();
-    }
-
-    public interface DownloadListener {
-        void onComplete(String html);
-        void onError();
     }
 
     public static void getSourceCode(String artist, String song, final DownloadListener listener) {
@@ -37,33 +32,28 @@ public class LyricsDownloader {
         final String cleanedArtist = setupForUrl(artist, true);
         final String cleanedSong = setupForUrl(song, false);
 
-        new Thread(new Runnable() {
+        Request request = new Request.Builder()
+                .url("http://www.azlyrics.com/lyrics/" + cleanedArtist + "/" + cleanedSong + ".html")
+                .build();
+        mClient.newCall(request).enqueue(new Callback() {
             @Override
-            public void run() {
-                Request request = new Request.Builder()
-                        .url("http://www.azlyrics.com/lyrics/" + cleanedArtist + "/" + cleanedSong + ".html")
-                        .build();
-                mClient.newCall(request).enqueue(new Callback() {
-                    @Override
-                    public void onFailure(Call call, IOException e) {
-                        Logger.debugError("error downloading: " + e.getMessage());
-                        listener.onError();
-                    }
-
-                    @Override
-                    public void onResponse(Call call, Response response) throws IOException {
-                        String html = response.body().string();
-                        String result = html;
-
-                        if (html.contains(NOT_FOUND)) {
-                            result = NOT_FOUND_CODE;
-                        }
-
-                        listener.onComplete(result);
-                    }
-                });
+            public void onFailure(Call call, IOException e) {
+                Logger.debugError("error downloading: " + e.getMessage());
+                listener.onError();
             }
-        }).start();
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String html = response.body().string();
+                String result = html;
+
+                if (html.contains(NOT_FOUND)) {
+                    result = NOT_FOUND_CODE;
+                }
+
+                listener.onComplete(result);
+            }
+        });
     }
 
     public static boolean isOnline(Context context) {
@@ -83,5 +73,11 @@ public class LyricsDownloader {
             return s.replace("the", "");
         }
         return s;
+    }
+
+    public interface DownloadListener {
+        void onComplete(String html);
+
+        void onError();
     }
 }

@@ -117,7 +117,12 @@ public class MainActivity extends AppCompatActivity implements
                     @Override
                     public void run() {
                         LyricsFragment lyricsFragment = LyricsFragment.newInstance(lyrics);
-                        changeFragment(lyricsFragment, "lyrics_fragment");
+                        try {
+                            changeFragment(lyricsFragment, "lyrics_fragment");
+                        } catch (IllegalStateException e) {
+                            Logger.debugError(e.getMessage());
+                            return;
+                        }
 
                         // save artist and song for autocomplete suggestions
                         if (!errors) {
