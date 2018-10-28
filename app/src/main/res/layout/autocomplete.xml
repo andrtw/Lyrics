@@ -1,22 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
+    android:paddingStart="@dimen/md_padding"
     android:paddingLeft="@dimen/md_padding"
     android:paddingTop="@dimen/sm_padding"
+    android:paddingEnd="0dp"
+    android:paddingRight="0dp"
     android:paddingBottom="@dimen/sm_padding">
+
     <TextView
         android:id="@+id/item"
         android:layout_width="0dp"
-        android:layout_weight="1"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_weight="1" />
+
     <TextView
         android:id="@+id/item_delete"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:gravity="center_vertical"
-        android:text="x"
         android:paddingLeft="@dimen/md_padding"
-        android:paddingRight="@dimen/md_padding" />
+        android:paddingRight="@dimen/md_padding"
+        android:text="x"
+        tools:ignore="HardcodedText" />
 </LinearLayout>

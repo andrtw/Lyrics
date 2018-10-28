@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
  * Created by andrea on 01/04/17.
  */
 
+@SuppressWarnings("WeakerAccess")
 public class SettingsManager {
 
     private static final String PREF_NAME = "com.example.andrea.lyrics.PREFERENCES";

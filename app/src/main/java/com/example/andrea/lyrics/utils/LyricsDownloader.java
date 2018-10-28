@@ -59,8 +59,10 @@ public class LyricsDownloader {
     public static boolean isOnline(Context context) {
         if (context != null) {
             ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-            NetworkInfo ni = cm.getActiveNetworkInfo();
-            return ni != null && ni.isConnectedOrConnecting();
+            if (cm != null) {
+                NetworkInfo info = cm.getActiveNetworkInfo();
+                return info != null && info.isConnectedOrConnecting();
+            }
         }
         return false;
     }

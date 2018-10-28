@@ -19,7 +19,6 @@ public class SpotifyBroadcastReceiver extends BroadcastReceiver {
         static final String METADATA_CHANGED = SPOTIFY_PACKAGE + ".metadatachanged";
     }
 
-    private Context context;
     private OnReceiveListener listener;
     private boolean doSearch;
     private String artistName, trackName;
@@ -28,8 +27,7 @@ public class SpotifyBroadcastReceiver extends BroadcastReceiver {
         void onReceive(String artist, String song);
     }
 
-    public SpotifyBroadcastReceiver(Context context, OnReceiveListener listener) {
-        this.context = context;
+    public SpotifyBroadcastReceiver(OnReceiveListener listener) {
         this.listener = listener;
         doSearch = false;
         artistName = "";
@@ -40,7 +38,7 @@ public class SpotifyBroadcastReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
 
-        if (action.equals(BroadcastTypes.METADATA_CHANGED)) {
+        if (BroadcastTypes.METADATA_CHANGED.equals(action)) {
             //String trackId = intent.getStringExtra("id");
             //String albumName = intent.getStringExtra("album");
             //int trackLengthInSec = intent.getIntExtra("length", 0);
@@ -51,7 +49,7 @@ public class SpotifyBroadcastReceiver extends BroadcastReceiver {
             trackName = intent.getStringExtra("track");
 
             Logger.debugMessage("METADATA_CHANGED: " + artistName + ", " + trackName);
-        } else if (action.equals(BroadcastTypes.PLAYBACK_STATE_CHANGED)) {
+        } else if (BroadcastTypes.PLAYBACK_STATE_CHANGED.equals(action)) {
             boolean playing = intent.getBooleanExtra("playing", false);
             int positionInMs = intent.getIntExtra("playbackPosition", 0);
 

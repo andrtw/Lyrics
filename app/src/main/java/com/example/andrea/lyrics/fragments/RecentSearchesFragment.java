@@ -1,5 +1,6 @@
 package com.example.andrea.lyrics.fragments;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -10,46 +11,34 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.andrea.lyrics.R;
+import com.example.andrea.lyrics.db.DbLyrics;
 import com.example.andrea.lyrics.model.RecentSearch;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class RecentSearchesFragment extends Fragment {
 
-    private static final String ARG_RECENT_SEARCHES = "recent_searches";
-
     private OnRecentSearchesFragmentListener mListener;
-
-    private List<RecentSearch> mRecentSearches;
+    private DbLyrics db;
 
     // UI
     private LinearLayout mRecentSearchesGrid;
 
-    public static RecentSearchesFragment newInstance(List<RecentSearch> recentSearches) {
-        RecentSearchesFragment fragment = new RecentSearchesFragment();
-        Bundle args = new Bundle();
-        args.putParcelableArrayList(ARG_RECENT_SEARCHES, (ArrayList<RecentSearch>) recentSearches);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mRecentSearches = getArguments().getParcelableArrayList(ARG_RECENT_SEARCHES);
-        }
+    public static RecentSearchesFragment newInstance() {
+        return new RecentSearchesFragment();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_recent_searches, container, false);
 
+        db = new DbLyrics(getActivity());
+        db.open();
+
         mRecentSearchesGrid = (LinearLayout) view.findViewById(R.id.recents_grid);
 
-        populateRecentSearches(inflater);
+        populateRecentSearches();
 
         return view;
     }
@@ -65,16 +54,29 @@ public class RecentSearchesFragment extends Fragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        db.open();
+    }
+
+    @Override
+    public void onPause() {
+        db.close();
+        super.onPause();
+    }
+
+    @Override
     public void onDetach() {
         super.onDetach();
         mListener = null;
     }
 
-    private void populateRecentSearches(LayoutInflater inflater) {
-        Collections.reverse(mRecentSearches);
+    private void populateRecentSearches() {
+        List<RecentSearch> recentSearches = db.getRecentSearches();
+        Collections.reverse(recentSearches);
         mRecentSearchesGrid.removeAllViews();
-        for (final RecentSearch r : mRecentSearches) {
-            View rv = inflater.inflate(R.layout.recent_search, null);
+        for (final RecentSearch r : recentSearches) {
+            @SuppressLint("InflateParams") View rv = getLayoutInflater().inflate(R.layout.recent_search, null);
             ((TextView) rv.findViewById(R.id.recent_artist_name)).setText(r.getArtistName());
             ((TextView) rv.findViewById(R.id.recent_song_name)).setText(r.getSongName());
             rv.setOnClickListener(new View.OnClickListener() {

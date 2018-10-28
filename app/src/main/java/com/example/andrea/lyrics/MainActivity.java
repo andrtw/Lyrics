@@ -33,6 +33,7 @@ public class MainActivity extends AppCompatActivity implements
 
     // UI
     private ProgressBar progress;
+    private RecentSearchesFragment recentSearchesFragment;
 
     // search dialog
     private SearchDialog mSearchDialog;
@@ -51,7 +52,8 @@ public class MainActivity extends AppCompatActivity implements
                 @Override
                 public void onBackStackChanged() {
                     if (getSupportActionBar() != null) {
-                        getSupportActionBar().setDisplayHomeAsUpEnabled(getSupportFragmentManager().getBackStackEntryCount() > 0);
+                        boolean recentSearchesShowing = getSupportFragmentManager().getBackStackEntryCount() == 0;
+                        getSupportActionBar().setDisplayHomeAsUpEnabled(!recentSearchesShowing);
                     }
                 }
             });
@@ -66,11 +68,10 @@ public class MainActivity extends AppCompatActivity implements
         mSearchDialog = new SearchDialog();
 
         // load the default fragment (recent searches)
-        RecentSearchesFragment recentSearchesFragment =
-                RecentSearchesFragment.newInstance(db.getRecentSearches());
+        recentSearchesFragment = RecentSearchesFragment.newInstance();
         changeFragment(recentSearchesFragment, false, "recent_searches_fragment");
 
-        broadcastReceiver = new SpotifyBroadcastReceiver(this, new SpotifyBroadcastReceiver.OnReceiveListener() {
+        broadcastReceiver = new SpotifyBroadcastReceiver(new SpotifyBroadcastReceiver.OnReceiveListener() {
             @Override
             public void onReceive(String artist, String song) {
                 search(artist, song);
