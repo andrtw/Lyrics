@@ -1,5 +1,6 @@
 package com.example.andrea.lyrics.fragments;
 
+import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -26,8 +27,6 @@ import com.example.andrea.lyrics.model.Lyrics;
 public class LyricsFragment extends Fragment {
 
     private static final String ARG_LYRICS = "lyrics";
-
-    private OnLyricsFragmentListener mListener;
 
     private Lyrics mLyrics;
 
@@ -85,7 +84,7 @@ public class LyricsFragment extends Fragment {
 
                         mLinesSelected++;
                     }
-                    mode.setTitle("" + mLinesSelected);
+                    mode.setTitle(String.valueOf(mLinesSelected));
                     return true;
                 default:
                     return false;
@@ -123,6 +122,7 @@ public class LyricsFragment extends Fragment {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_lyrics, container, false);
@@ -205,36 +205,24 @@ public class LyricsFragment extends Fragment {
 
     private void copyToClipboard(String text) {
         ClipboardManager cm = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
-        ClipData data = ClipData.newPlainText("lyrics lines", text.trim());
-        cm.setPrimaryClip(data);
-        Toast.makeText(getActivity(), R.string.lyrics_lines_copied, Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnLyricsFragmentListener) {
-            mListener = (OnLyricsFragmentListener) context;
-        } else {
-            throw new RuntimeException(context.toString() + " must implement OnLyricsFragmentListener");
+        if (cm != null) {
+            ClipData data = ClipData.newPlainText("lyrics lines", text.trim());
+            cm.setPrimaryClip(data);
+            Toast.makeText(getActivity(), R.string.lyrics_lines_copied, Toast.LENGTH_SHORT).show();
         }
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-        mListener = null;
     }
 
     private LyricsLineInfo getLyricsLineInfo(TextView textView) {
         return (LyricsLineInfo) textView.getTag();
     }
 
-    public interface OnLyricsFragmentListener {
-    }
-
     private class LyricsLineInfo {
-        public boolean selected = false;
+        boolean selected = false;
     }
 
 }

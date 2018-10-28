@@ -1,38 +1,33 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/lyrics_scroll_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.example.andrea.lyrics.fragments.LyricsFragment">
 
-    <ScrollView
-        android:id="@+id/lyrics_scroll_view"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/artist_song_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_marginTop="@dimen/md_padding"
+            android:layout_marginBottom="@dimen/sm_padding"
+            android:gravity="center"
+            android:textColor="@color/light_gray"
+            android:textSize="20sp"
+            android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/artist_song_text"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/sm_padding"
-                android:layout_marginTop="@dimen/md_padding"
-                android:gravity="center"
-                android:textColor="@color/light_gray"
-                android:textSize="20sp"
-                android:textStyle="bold" />
+        <LinearLayout
+            android:id="@+id/lyrics_lines"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/md_padding"
+            android:orientation="vertical" />
 
-            <LinearLayout
-                android:id="@+id/lyrics_lines"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginBottom="@dimen/md_padding"/>
+    </LinearLayout>
+</ScrollView>
 
-        </LinearLayout>
-    </ScrollView>
-
-</RelativeLayout>

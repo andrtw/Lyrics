@@ -1,5 +1,6 @@
 package com.example.andrea.lyrics.views;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -7,6 +8,8 @@ import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -33,8 +36,12 @@ public class SearchDialog extends DialogFragment {
     private DbLyrics mDb;
 
     private AutoCompleteTextView mSearchArtist, mSearchSong;
-    private String mLastArtist = "", mLastSong = "";
+    @Nullable
+    private String mLastArtist = null;
+    @Nullable
+    private String mLastSong = null;
 
+    @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         mDb = ((MainActivity) getActivity()).getDb();
@@ -42,13 +49,13 @@ public class SearchDialog extends DialogFragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = getActivity().getLayoutInflater();
 
-        View searchView = inflater.inflate(R.layout.dialog_search, null);
+        @SuppressLint("InflateParams") View searchView = inflater.inflate(R.layout.dialog_search, null);
 
         // text input
         mSearchArtist = (AutoCompleteTextView) searchView.findViewById(R.id.search_artist);
         mSearchSong = (AutoCompleteTextView) searchView.findViewById(R.id.search_song);
-        mSearchArtist.setText(mLastArtist);
-        mSearchSong.setText(mLastSong);
+        mSearchArtist.setText(mLastArtist != null ? mLastArtist : "");
+        mSearchSong.setText(mLastSong != null ? mLastSong : "");
         setupArtistAutocomplete();
         setupSongAutocomplete();
 
@@ -57,13 +64,13 @@ public class SearchDialog extends DialogFragment {
         searchBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mListener.onSearch(mSearchArtist.getText().toString(), mSearchSong.getText().toString());
+                mListener.onSearch(mSearchArtist.getText().toString().trim(), mSearchSong.getText().toString().trim());
             }
         });
         mSearchSong.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                mListener.onSearchWithIME(actionId, mSearchArtist.getText().toString(), mSearchSong.getText().toString());
+                mListener.onSearch(mSearchArtist.getText().toString().trim(), mSearchSong.getText().toString().trim());
                 return true;
             }
         });
@@ -78,11 +85,14 @@ public class SearchDialog extends DialogFragment {
         builder.setView(searchView);
         AlertDialog alertDialog = builder.create();
         alertDialog.setCanceledOnTouchOutside(false);
-        alertDialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
-        alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        if (alertDialog.getWindow() != null) {
+            alertDialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+            alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
         return alertDialog;
     }
 
+    @Nullable
     public String getLastArtist() {
         return mLastArtist;
     }
@@ -95,27 +105,32 @@ public class SearchDialog extends DialogFragment {
         return mLastSong;
     }
 
+    @Nullable
     public void setLastSong(String lastSong) {
         mLastSong = lastSong;
     }
 
+    @Nullable
     public String getArtist() {
         if (mSearchArtist != null) {
             return mSearchArtist.getText().toString();
         }
-        return "";
+        return null;
     }
 
+    @Nullable
     public String getSong() {
         if (mSearchSong != null) {
             return mSearchSong.getText().toString();
         }
-        return "";
+        return null;
     }
 
     public void hideKeyboard() {
         InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.toggleSoftInput(0, 0);
+        if (imm != null) {
+            imm.toggleSoftInput(0, 0);
+        }
     }
 
     @Override
@@ -159,8 +174,6 @@ public class SearchDialog extends DialogFragment {
 
     public interface SearchDialogListener {
         void onSearch(String artistName, String songName);
-
-        void onSearchWithIME(int actionId, String artistName, String songName);
     }
 
     private class ClearSearchInput implements View.OnClickListener {

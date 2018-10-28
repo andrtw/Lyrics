@@ -6,12 +6,14 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.inputmethod.EditorInfo;
 import android.widget.ProgressBar;
 
 import com.example.andrea.lyrics.db.DbLyrics;
@@ -27,7 +29,6 @@ import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity implements
         RecentSearchesFragment.OnRecentSearchesFragmentListener,
-        LyricsFragment.OnLyricsFragmentListener,
         SearchDialog.SearchDialogListener {
 
     // UI
@@ -45,6 +46,17 @@ public class MainActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        if (getSupportFragmentManager() != null) {
+            getSupportFragmentManager().addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
+                @Override
+                public void onBackStackChanged() {
+                    if (getSupportActionBar() != null) {
+                        getSupportActionBar().setDisplayHomeAsUpEnabled(getSupportFragmentManager().getBackStackEntryCount() > 0);
+                    }
+                }
+            });
+        }
+
         db = new DbLyrics(this);
         db.open();
         handler = new Handler();
@@ -56,7 +68,7 @@ public class MainActivity extends AppCompatActivity implements
         // load the default fragment (recent searches)
         RecentSearchesFragment recentSearchesFragment =
                 RecentSearchesFragment.newInstance(db.getRecentSearches());
-        changeFragment(recentSearchesFragment, "recent_searches_fragment");
+        changeFragment(recentSearchesFragment, false, "recent_searches_fragment");
 
         broadcastReceiver = new SpotifyBroadcastReceiver(this, new SpotifyBroadcastReceiver.OnReceiveListener() {
             @Override
@@ -67,17 +79,18 @@ public class MainActivity extends AppCompatActivity implements
 
         // restore search dialog artist and song
         if (savedInstanceState != null) {
-            String lastArtist = "", lastSong = "";
+            String lastArtist = null;
+            String lastSong = null;
             if (savedInstanceState.containsKey("search_artist")) {
-                lastArtist = savedInstanceState.getString("search_artist");
+                lastArtist = savedInstanceState.getString("search_artist", null);
                 mSearchDialog.setLastArtist(lastArtist);
             }
             if (savedInstanceState.containsKey("search_song")) {
-                lastSong = savedInstanceState.getString("search_song");
+                lastSong = savedInstanceState.getString("search_song", null);
                 mSearchDialog.setLastSong(lastSong);
             }
             // do search if needed
-            if (!lastArtist.isEmpty() && !lastSong.isEmpty()) {
+            if (!TextUtils.isEmpty(lastArtist) && !TextUtils.isEmpty(lastSong)) {
                 search(lastArtist, lastSong);
             }
         }
@@ -118,7 +131,7 @@ public class MainActivity extends AppCompatActivity implements
                     public void run() {
                         try {
                             LyricsFragment lyricsFragment = LyricsFragment.newInstance(lyrics);
-                            changeFragment(lyricsFragment, "lyrics_fragment");
+                            changeFragment(lyricsFragment, true, "lyrics_fragment");
                             // save artist and song for autocomplete suggestions
                             if (!errors) {
                                 saveArtistAndSong(lyrics.getArtistName(), lyrics.getSongName());
@@ -191,10 +204,8 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menu_home:
-                // go to home (recent searches)
-                RecentSearchesFragment recentSearchesFragment = RecentSearchesFragment.newInstance(db.getRecentSearches());
-                changeFragment(recentSearchesFragment, "recent_searches_fragment");
+            case android.R.id.home:
+                onBackPressed();
                 return true;
             case R.id.menu_search_current:
                 // search current playing song
@@ -253,11 +264,12 @@ public class MainActivity extends AppCompatActivity implements
         });
     }
 
-    private void changeFragment(Fragment fragment, String tag) {
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.container, fragment, tag)
-                .commit();
+    private void changeFragment(Fragment fragment, boolean addToBackStack, String tag) {
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        if (addToBackStack) {
+            transaction.addToBackStack(null);
+        }
+        transaction.replace(R.id.container, fragment, tag).commit();
     }
 
     private void showSearchDialog() {
@@ -285,13 +297,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onSearch(String artistName, String songName) {
-        search(artistName.trim(), songName.trim());
+        search(artistName, songName);
     }
 
-    @Override
-    public void onSearchWithIME(int actionId, String artistName, String songName) {
-        if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-            search(artistName, songName);
-        }
-    }
 }

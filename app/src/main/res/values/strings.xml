@@ -7,7 +7,6 @@
     <string name="search_button">Search</string>
 
     <!-- Menu -->
-    <string name="home_menu">Home</string>
     <string name="search_current_menu">Search current</string>
     <string name="search_menu">Search</string>
     <string name="settings_menu">Settings</string>
